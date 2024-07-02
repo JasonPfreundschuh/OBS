@@ -1,0 +1,215 @@
+:root {
+    --main-bg-color: rgb(43, 43, 43);
+    --sec-bg-color: rgb(31, 31, 31);
+    --tri-bg-color: rgb(63, 63, 63);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+a {
+    color: cornflowerblue;
+    text-decoration: none;
+}
+
+a:hover {
+    color: rgb(241, 76, 76);
+}
+
+p {
+    font-family: "Palo", monospace;
+    font-weight: bolder;
+    color: white;
+    user-select: none;
+}
+
+thick {
+    font-family: "Palo", monospace;
+    color: white;
+    user-select: none;
+    font-size: 3vh;
+}
+
+thickName {
+    font-size: 10vh;
+    font-family: "Palo", monospace;
+    font-weight: bolder;
+    color: white;
+    user-select: none;
+}
+
+.buttonP {
+    display: grid;
+    place-content: center;
+    width: 16vw;
+    height: 6vh;
+    font-size: 3vh;
+    margin: 0.5vh;
+    cursor: pointer;
+    background-color: rgb(67, 64, 64);
+}
+
+.buttonP:not(.blocked):hover {
+    color: black;
+    background-color: white;
+}
+
+#createNewProjectButton:not(.blocked) {
+    background-color: rgb(50, 100, 145);
+}
+
+#createNewProjectButton:not(.blocked):hover {
+    color: black;
+    background-color: rgb(118, 202, 238);
+}
+
+#homeScreen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background-color: var(--main-bg-color);
+}
+
+#gameName {
+    display: grid;
+    place-items: center;
+    height: 20vh;
+    background-color: rgb(31, 31, 31);
+}
+
+#homeScreenOptions {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: grid;
+    place-content: center;
+    height: 100vh;
+}
+
+#credits {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    height: 8.8vh;
+    display: flex;
+    justify-content: space-between;
+    background-color: rgb(31, 31, 31);
+}
+
+#credits > p {
+    font-size: 2.5vh;
+    margin: 1.5vw;
+    color: gray;
+}
+
+#createNewProject {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    place-content: center;
+    background-color: var(--main-bg-color);
+}
+
+#createNewProject > p {
+    display: grid;
+    place-content: center;
+    margin-top: 3vh;
+    font-size: 2.5vh;
+    color: rgb(241, 76, 76);
+}
+
+#newProjectName {
+    height: 7vh;
+    margin-top: 10vh;
+    font-size: 5vh;
+    border: none;
+    outline: none;
+    padding-left: 0.5vw;
+    color: white;
+    caret-color: white;
+    background-color: rgb(63, 63, 63);
+}
+
+#createNewProject > div {
+    display: grid;
+    place-content: center;
+    grid-template-columns: 10vw 10vw;
+    gap: 1vh;
+    margin-top: 5vh;
+}
+
+#createNewProject > div > p {
+    width: 10vw;
+}
+
+#loadProject {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    place-content: center;
+    background-color: var(--main-bg-color);
+}
+
+#loadProject > thickName {
+    display: grid;
+    place-content: center
+}
+
+#projectList {
+    display: grid;
+    place-self: center;    height: 60vh;
+    width: 30vw;
+    background-color: var(--tri-bg-color);
+}
+
+#loadProject > div {
+    display: grid;
+    place-content: center;
+    grid-template-columns: 10vw 10vw 10vw 10vw 10vw;
+    gap: 1vh;
+    margin-top: 5vh;
+}
+
+#loadProject > div > p {
+    width: 10vw;
+}
+
+#about {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: grid;
+    place-content: center;
+    place-items: center;
+    background-color: var(--main-bg-color);
+}
+
+#about > p:first-child {
+    font-size: 2.2vh;
+    font-weight: normal;
+}
+
+#about > p:last-child {
+    margin-top: 10vh;
+    width: 10vw;
+}
+
+.blocked {
+    cursor: auto;
+    color: gray;
+    background-color: var(--tri-bg-color);
+}

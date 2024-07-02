@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+    <title>DLS (OBS)</title>
+</head>
+<body>
+    <div id="homeScreen">
+        <div id="gameName">
+            <thickName>DIGITAL LOGIC SIM</thickName>
+        </div>
+        <div id="homeScreenOptions">
+            <p class="buttonP" onclick="openPage(1)">NEW PROJECT</p>
+            <p class="buttonP" onclick="openPage(2)">LOAD PROJECT</p>
+            <p class="buttonP" onclick="openPage(0)">SETTINGS</p>
+            <p class="buttonP" onclick="openPage(4)">ABOUT</p>
+        </div>
+        <div id="credits">
+            <p>Created by: Sebastian Lague</p>
+            <p>Reverse engineered: Jason</p>
+            <p>Version: 1.0.0 (alpha) Last Updated: --/--/--</p>
+        </div>
+    </div>
+    <div id="createNewProject">
+        <thickName>CREATE PROJECT</thickName>
+        <input id="newProjectName" type="text" placeholder="Name" oninput="newProjectNameOnInput(this)">
+        <p id="pleaseEnterNamePrompt">Please enter a name for your project.</p>
+        <div>
+            <p class="buttonP" onclick="openPage(0)">BACK</p>
+            <p id="createNewProjectButton" class="buttonP blocked" onclick="createNewProject()">CREATE</p>
+        </div>
+    </div>
+    <div id="loadProject">
+        <thickName>LOAD PROJECT</thickName>
+        <div id="projectList"></div>
+        <div>
+            <p class="buttonP" onclick="openPage(0)">BACK</p>
+            <p class="buttonP blocked">DELETE</p>
+            <p class="buttonP blocked">RENAME</p>
+            <p class="buttonP blocked">COPY</p>
+            <p class="buttonP blocked">OPEN</p>
+        </div>
+    </div>
+    <div id="settings"></div>
+    <div id="about">
+        <p>
+            <thick>Overview</thick><br>
+            You begin with two types of chips: AND and NOT. These simple built-in chips can be used to create your own custom chips, each<br>
+            of which can then be used inside of the next one, allowing you to build up layers of increasing complexity<br><br>
+
+            <thick>How to Create Chips</thick><br>
+            New chips can be created from the menu in the bottom-left of the editor.<br><br>
+
+            Input and output pins can be added to the new chip by clicking on the bars on the left and right edges of the editor. These pins will<br>
+            display their state (0 or 1) as a circle of dark or light color. The state of the input pins can be toggled by clicking on them.<br><br>
+
+            To add previously-created chips into the new chip, simply select them from the bar along the bottom of the editor. These "sub-<br>
+            chips" can then be connected to the input/output pins of the new chip (or to one another) by clicking on the pins to create wires.<br><br>
+
+            Once you're happy with the chip, you can give it a name and save it from the menu.<br>
+            You can find all of your created chips (along with a few extra built-in chips) in the Chip Library. From there, you can also delete or<br>
+            edit your custom chips at any point.<br><br>
+            <thick>Please Note...</thick><br>
+            This is a work-in-progress project, which I'm building as part of my video series "<a href="https://www.youtube.com/playlist?list=PLFt_AvWsXl0dPhqVsKt1Ni_46ARyiCGSq">Exploring How Computers Work</a>". It is intended<br>
+            only as a fun toy for experimenting with and learning some basic concepts, and not at all as a serious simulation tool.<br>
+            The simulator currently has many missing features, which I plan to add in the future. Feedback is greatly appreciated.<br>
+            Thanks for giving it a try!
+        </p>
+        <p class="buttonP" onclick="openPage(0)">BACK</p>
+    </div>
+</body>
+</html>
