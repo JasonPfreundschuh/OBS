@@ -1,5 +1,9 @@
-var allProjects = []
+var newProjectName = document.getElementById("newProjectName")
+var renameProjectName = document.getElementById("renameProjectName")
+var allProjects = getAllProjects()
 var currentProject = {}
+var allProjectCards = []
+var selectedProjectCard = NaN
 var pages = [
     document.getElementById("homeScreen"),
     document.getElementById("createNewProject"),
@@ -18,36 +22,33 @@ function openPage(page) {
         currentPage.style.display = "none"
     })
 
-    newProjectName.value = ""
-    newProjectNameOnInput(document.getElementById("newProjectName"))
     pages[page].style.display = "grid"
+
+    newProjectName.value = ""
+    newProjectNameOnInput()
     if (page == 1) newProjectName.focus()
-}
 
-/**
- * 
- * @param {String} name 
- */
-
-function newProjectNameOnInput(name) {
-    if (name.value == '') {
-        document.getElementById('pleaseEnterNamePrompt').style.color = 'rgb(241, 76, 76)'
-        document.getElementById('createNewProjectButton').classList.add('blocked')
-    } else {
-        document.getElementById('pleaseEnterNamePrompt').style.color = 'transparent'
-        document.getElementById('createNewProjectButton').classList.remove('blocked')
+    selectedProjectCard = NaN
+    let children = document.getElementById("loadProject").lastElementChild.children
+    for (let i = 1; i < children.length; i++) {
+        children[i].classList.add("blocked")
     }
 }
 
-/**
- * 
- * @param {String} name 
- * @param {[{}]} otherProjects 
- */
+function newProjectNameOnInput() {
+    if (newProjectName.value == "") {
+        document.getElementsByClassName('pleaseEnterNamePrompt')[0].style.color = "rgb(241, 76, 76)"
+        document.getElementById('createNewProjectButton').classList.add("blocked")
+    } else {
+        document.getElementsByClassName('pleaseEnterNamePrompt')[0].style.color = "transparent"
+        document.getElementById('createNewProjectButton').classList.remove("blocked")
+    }
+}
 
-function createNewProject(name, otherProjects) {
+function createNewProject() {
+    if (newProjectName.value == "") return
     let newProject = {
-        name: name,
+        name: newProjectName.value,
         chips: [
             {
                 name: "AND",
@@ -91,9 +92,10 @@ function createNewProject(name, otherProjects) {
         ],
         starredChips: ["AND", "NOT"]
     }
+    currentProject = newProject
     convertChipCodesToString(newProject)
-    otherProjects.push(newProject)
-    localStorage.projects = JSON.stringify(otherProjects)
+    allProjects.push(newProject)
+    localStorage.projects = JSON.stringify(allProjects)
 }
 
 /**
@@ -120,4 +122,73 @@ function convertChipCodesToFuncs(project) {
     })
 }
 
+function getAllProjects() {
+    return localStorage.projects == undefined ? [] : JSON.parse(localStorage.projects)
+}
+
+function loadAllProjects() {
+    document.getElementById("projectList").replaceChildren()
+    allProjects.forEach((project, i) => {
+        let projectCard = document.createElement("p")
+        projectCard.id = i
+        projectCard.innerText = project.name
+        projectCard.classList.add("projectCard")
+        projectCard.setAttribute("onclick", "selectProjectCard(Number(this.id))")
+        allProjectCards.push(projectCard)
+        document.getElementById("projectList").appendChild(projectCard)
+    })
+}
+
+/**
+ * 
+ * @param {Number} id 
+ */
+
+function selectProjectCard(id) {
+    allProjectCards.forEach((card, i) => {
+        if (i == id) {
+            card.classList.add("selected")
+            selectedProjectCard = id
+        } else card.classList.remove("selected")
+    })
+
+    let children = document.getElementById("loadProject").lastElementChild.children
+    for (let i = 1; i < children.length; i++) {
+        children[i].classList.remove("blocked")
+    }
+}
+
+function openCloseRenameContainer(show) {
+    if (isNaN(selectedProjectCard)) return
+    if (show) {
+        document.getElementById("renameContainer").style.display = "block"
+        renameProjectName.focus()
+    } else {
+        document.getElementById("renameContainer").style.display = "none"
+        renameProjectName.value = ""
+    }
+}
+
+function renameProjectNameOnInput() {
+    if (renameProjectName.value == "") {
+        document.getElementsByClassName('pleaseEnterNamePrompt')[1].style.color = "rgb(241, 76, 76)"
+        document.getElementById('renameProjectButton').classList.add("blocked")
+    } else {
+        document.getElementsByClassName('pleaseEnterNamePrompt')[1].style.color = "transparent"
+        document.getElementById('renameProjectButton').classList.remove("blocked")
+    }
+}
+
+function renameProject() {
+    if (isNaN(selectedProjectCard)) return
+    if (renameProjectName.value == "") return
+    allProjects[selectedProjectCard].name = renameProjectName.value
+    localStorage.projects = JSON.stringify(allProjects)
+    loadAllProjects()
+    renameProjectName.value = ""
+    renameProjectNameOnInput()
+    document.getElementById("renameContainer").style.display = "none"
+}
+
+loadAllProjects()
 openPage(0)

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="style.css">
     <script src="script.js" defer></script>
     <title>DLS (OBS)</title>
@@ -26,20 +27,30 @@
     </div>
     <div id="createNewProject">
         <thickName>CREATE PROJECT</thickName>
-        <input id="newProjectName" type="text" placeholder="Name" oninput="newProjectNameOnInput(this)">
-        <p id="pleaseEnterNamePrompt">Please enter a name for your project.</p>
+        <input id="newProjectName" type="text" placeholder="Name" oninput="newProjectNameOnInput()">
+        <p class="pleaseEnterNamePrompt">Please enter a name for your project.</p>
         <div>
             <p class="buttonP" onclick="openPage(0)">BACK</p>
             <p id="createNewProjectButton" class="buttonP blocked" onclick="createNewProject()">CREATE</p>
         </div>
     </div>
     <div id="loadProject">
+        <div id="renameContainer">
+            <div>
+                <input id="renameProjectName" type="text" placeholder="Name" oninput="renameProjectNameOnInput()">
+                <p class="pleaseEnterNamePrompt">Please enter a name for your project.</p>
+                <div>
+                    <p class="buttonP" onclick="openCloseRenameContainer(false)">BACK</p>
+                    <p id="renameProjectButton" class="buttonP blocked" onclick="renameProject()">RENAME</p>
+                </div>
+            </div>
+        </div>
         <thickName>LOAD PROJECT</thickName>
         <div id="projectList"></div>
         <div>
-            <p class="buttonP" onclick="openPage(0)">BACK</p>
+            <p class="buttonP" onclick="openPage(0); selectProjectCard(NaN)">BACK</p>
             <p class="buttonP blocked">DELETE</p>
-            <p class="buttonP blocked">RENAME</p>
+            <p class="buttonP blocked" onclick="openCloseRenameContainer(true)">RENAME</p>
             <p class="buttonP blocked">COPY</p>
             <p class="buttonP blocked">OPEN</p>
         </div>

@@ -2,6 +2,7 @@
     --main-bg-color: rgb(43, 43, 43);
     --sec-bg-color: rgb(31, 31, 31);
     --tri-bg-color: rgb(63, 63, 63);
+    --red-accent-color: rgb(241, 76, 76);
 }
 
 * {
@@ -16,7 +17,7 @@ a {
 }
 
 a:hover {
-    color: rgb(241, 76, 76);
+    color: var(--red-accent-color);
 }
 
 p {
@@ -55,6 +56,24 @@ thickName {
 .buttonP:not(.blocked):hover {
     color: black;
     background-color: white;
+}
+
+.pleaseEnterNamePrompt {
+    display: grid;
+    place-content: center;
+    margin-top: 3vh;
+    font-size: 2.5vh;
+    color: var(--red-accent-color);
+}
+
+.blocked {
+    cursor: auto;
+    color: gray;
+    background-color: var(--tri-bg-color);
+}
+
+.selected {
+    background-color: var(--red-accent-color);
 }
 
 #createNewProjectButton:not(.blocked) {
@@ -116,19 +135,13 @@ thickName {
     left: 0;
     bottom: 0;
     right: 0;
+    display: none;
     place-content: center;
     background-color: var(--main-bg-color);
 }
 
-#createNewProject > p {
-    display: grid;
-    place-content: center;
-    margin-top: 3vh;
-    font-size: 2.5vh;
-    color: rgb(241, 76, 76);
-}
-
-#newProjectName {
+#newProjectName,
+#renameProjectName {
     height: 7vh;
     margin-top: 10vh;
     font-size: 5vh;
@@ -158,8 +171,38 @@ thickName {
     left: 0;
     bottom: 0;
     right: 0;
+    display: none;
     place-content: center;
     background-color: var(--main-bg-color);
+}
+
+#renameContainer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: none;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+#renameContainer > div {
+    position: absolute;
+    top: 20%;
+    left: 20%;
+    bottom: 20%;
+    right: 20%;
+    display: grid;
+    place-content: center;
+    background-color: var(--main-bg-color);
+}
+
+#renameContainer > div > div {
+    display: grid;
+    place-content: center;
+    grid-template-columns: 16vw 16vw;
+    gap: 1vh;
+    margin-top: 5vh;
 }
 
 #loadProject > thickName {
@@ -169,12 +212,27 @@ thickName {
 
 #projectList {
     display: grid;
-    place-self: center;    height: 60vh;
-    width: 30vw;
+    place-self: center;
+    align-content: start;
+    height: 60vh;
+    width: 35vw;
     background-color: var(--tri-bg-color);
 }
 
-#loadProject > div {
+.projectCard {
+    display: grid;
+    align-items: center;
+    padding-left: 2vh;
+    height: 6vh;
+    font-size: 2.8vh;
+    font-weight: normal;
+}
+
+.projectCard:not(.selected):hover {
+    background-color: rgb(92, 92, 92);
+}
+
+#loadProject > div:last-child {
     display: grid;
     place-content: center;
     grid-template-columns: 10vw 10vw 10vw 10vw 10vw;
@@ -182,7 +240,7 @@ thickName {
     margin-top: 5vh;
 }
 
-#loadProject > div > p {
+#loadProject > div:last-child > p {
     width: 10vw;
 }
 
@@ -192,7 +250,7 @@ thickName {
     left: 0;
     bottom: 0;
     right: 0;
-    display: grid;
+    display: none;
     place-content: center;
     place-items: center;
     background-color: var(--main-bg-color);
@@ -206,10 +264,4 @@ thickName {
 #about > p:last-child {
     margin-top: 10vh;
     width: 10vw;
-}
-
-.blocked {
-    cursor: auto;
-    color: gray;
-    background-color: var(--tri-bg-color);
 }
