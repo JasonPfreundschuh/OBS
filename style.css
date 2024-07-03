@@ -34,7 +34,7 @@ thick {
     font-size: 3vh;
 }
 
-thickName {
+thickname {
     font-size: 10vh;
     font-family: "Palo", monospace;
     font-weight: bolder;
@@ -205,7 +205,7 @@ thickName {
     margin-top: 5vh;
 }
 
-#loadProject > thickName {
+#loadProject > thickname {
     display: grid;
     place-content: center
 }
