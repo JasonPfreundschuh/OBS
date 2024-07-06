@@ -4,6 +4,7 @@ var allProjects = getAllProjects()
 var currentProject = {}
 var allProjectCards = []
 var selectedProjectCard = NaN
+var characterColor = 0
 var pages = [
     document.getElementById("homeScreen"),
     document.getElementById("createNewProject"),
@@ -11,6 +12,26 @@ var pages = [
     document.getElementById("settings"),
     document.getElementById("about")
 ]
+
+async function switchColorOfCharacters() {
+    await new Promise(resolve => setTimeout(resolve, 3000))
+    characterColor++
+    if (characterColor > 2) characterColor = 0
+    let words = document.getElementById("gameName").children
+    for (let i = 0; i < words.length; i++) {
+        let characters = words[i].children
+        for (let j = 0; j < characters.length; j++) {
+            let srcTemp = characters[j].src.split("/")
+            srcTemp.pop()
+            srcTemp.push(characterColor + ".png")
+            src = srcTemp.join("/")
+            characters[j].src = src
+
+            await new Promise(resolve => setTimeout(resolve, 100))
+        }
+    }
+    switchColorOfCharacters()
+}
 
 /**
  * 
@@ -190,5 +211,6 @@ function renameProject() {
     document.getElementById("renameContainer").style.display = "none"
 }
 
-loadAllProjects()
 openPage(0)
+loadAllProjects()
+switchColorOfCharacters()
