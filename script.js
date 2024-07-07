@@ -1,17 +1,17 @@
-var newProjectName = document.getElementById("newProjectName")
-var renameProjectName = document.getElementById("renameProjectName")
-var allProjects = getAllProjects()
-var currentProject = {}
-var allProjectCards = []
-var selectedProjectCard = NaN
-var characterColor = 0
-var pages = [
+const newProjectName = document.getElementById("newProjectName")
+const renameProjectName = document.getElementById("renameProjectName")
+const pages = [
     document.getElementById("homeScreen"),
     document.getElementById("createNewProject"),
     document.getElementById("loadProject"),
     document.getElementById("settings"),
     document.getElementById("about")
 ]
+var allProjects = getAllProjects()
+var currentProject = {}
+var allProjectCards = []
+var selectedProjectCard = NaN
+var characterColor = 0
 
 async function switchColorOfCharacters() {
     await new Promise(resolve => setTimeout(resolve, 3000))
@@ -178,6 +178,11 @@ function selectProjectCard(id) {
         children[i].classList.remove("blocked")
     }
 }
+
+/**
+ * 
+ * @param {boolean} show 
+ */
 
 function openCloseRenameContainer(show) {
     if (isNaN(selectedProjectCard)) return
