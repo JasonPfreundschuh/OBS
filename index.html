@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="style.css">
-    <script src="script.js" defer></script>
+    <script src="./JavaScript/script.js" defer></script>
     <title>DLS (OBS)</title>
 </head>
 <body>
@@ -65,11 +65,33 @@
                 </div>
             </div>
         </div>
+        <div id="deleteContainer">
+            <div>
+                <p>
+                    Are you sure you want to delete this project?<br>
+                    This action cannot be undone.
+                </p>
+                <div>
+                    <p class="buttonP" onclick="openCloseDeleteContainer(false)">CANCEL</p>
+                    <p id="DeleteProjectButton" class="buttonP" onclick="deleteProject()">DELETE</p>
+                </div>
+            </div>
+        </div>
+        <div id="copyContainer">
+            <div>
+                <input id="copyProjectName" type="text" placeholder="Name" oninput="copyProjectNameOnInput()">
+                <p class="pleaseEnterNamePrompt">Please enter a name for your project.</p>
+                <div>
+                    <p class="buttonP" onclick="openCloseCopyContainer(false)">BACK</p>
+                    <p id="copyProjectButton" class="buttonP blocked" onclick="copyProject()">RENAME</p>
+                </div>
+            </div>
+        </div>
         <thickname>LOAD PROJECT</thickname>
         <div id="projectList"></div>
         <div>
             <p class="buttonP" onclick="openPage(0); selectProjectCard(NaN)">BACK</p>
-            <p class="buttonP blocked">DELETE</p>
+            <p class="buttonP blocked" onclick="openCloseDeleteContainer(true)">DELETE</p>
             <p class="buttonP blocked" onclick="openCloseRenameContainer(true)">RENAME</p>
             <p class="buttonP blocked">COPY</p>
             <p class="buttonP blocked">OPEN</p>

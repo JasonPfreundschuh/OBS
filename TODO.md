@@ -1,0 +1,40 @@
+- Copy projects
+- Add settings <span style="color: yellow;">(auto-save, toggle pin names, remember last session, etc.)
+- Make Editor
+  - Canvas <span style="color: cornflowerblue;">(expandable)<span style="color: white;">
+    - Zoom function
+    - Pins <span style="color: cornflowerblue;">(IN/OUT)<span style="color: white;">
+      - Rename
+      - Move
+      - Delete
+    - Chips <span style="color: red;">(ALWAYS LOOKS THE SAME!!!)<span style="color: white;">
+      - Rename
+      - Move
+      - Delete
+    - Connections
+      - Preview for connections
+      - 45° angles <span style="color: red;">(ONLY!!!)
+      - Rename
+      - Move
+      - Delete
+  - Menu
+    - New chip
+    - Save chip
+      - Name
+      - Color chips
+    - Project library
+      - Build-in chips
+        - Display
+        - Busses
+        - Tri-stated buffer
+        - Clock
+        - AND
+        - NOT
+      - Rename chips
+      - Edit chips
+      - Add chips
+      - Un-/star chips
+    - Settings
+    - Quit
+  - Stared chips list
+  - Guide lines

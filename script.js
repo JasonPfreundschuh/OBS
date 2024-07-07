@@ -56,13 +56,31 @@ function openPage(page) {
     }
 }
 
+/**
+ * 
+ * @param {String} name 
+ */
+
+function doesProjectExist(name) {
+    for (let i = 0; i < allProjects.length; i++) {
+        if (name == allProjects[i].name) return true
+    }
+}
+
 function newProjectNameOnInput() {
     if (newProjectName.value == "") {
+        document.getElementsByClassName('pleaseEnterNamePrompt')[0].innerHTML = "Please enter a name for your project."
         document.getElementsByClassName('pleaseEnterNamePrompt')[0].style.color = "rgb(241, 76, 76)"
         document.getElementById('createNewProjectButton').classList.add("blocked")
-    } else {
-        document.getElementsByClassName('pleaseEnterNamePrompt')[0].style.color = "transparent"
-        document.getElementById('createNewProjectButton').classList.remove("blocked")
+        return
+    }
+    document.getElementsByClassName('pleaseEnterNamePrompt')[0].style.color = "transparent"
+    document.getElementById('createNewProjectButton').classList.remove("blocked")
+
+    if (doesProjectExist(newProjectName.value)) {
+        document.getElementsByClassName('pleaseEnterNamePrompt')[0].innerHTML = "A project with this name already exists."
+        document.getElementsByClassName('pleaseEnterNamePrompt')[0].style.color = "rgb(241, 76, 76)"
+        document.getElementById('createNewProjectButton').classList.add("blocked")
     }
 }
 
@@ -149,6 +167,7 @@ function getAllProjects() {
 
 function loadAllProjects() {
     document.getElementById("projectList").replaceChildren()
+    allProjectCards = []
     allProjects.forEach((project, i) => {
         let projectCard = document.createElement("p")
         projectCard.id = i
@@ -181,13 +200,13 @@ function selectProjectCard(id) {
 
 /**
  * 
- * @param {boolean} show 
+ * @param {Boolean} show 
  */
 
 function openCloseRenameContainer(show) {
     if (isNaN(selectedProjectCard)) return
     if (show) {
-        document.getElementById("renameContainer").style.display = "block"
+        document.getElementById("renameContainer").style.display = "grid"
         renameProjectName.focus()
     } else {
         document.getElementById("renameContainer").style.display = "none"
@@ -197,11 +216,18 @@ function openCloseRenameContainer(show) {
 
 function renameProjectNameOnInput() {
     if (renameProjectName.value == "") {
+        document.getElementsByClassName('pleaseEnterNamePrompt')[1].innerHTML = "Please enter a name for your project."
         document.getElementsByClassName('pleaseEnterNamePrompt')[1].style.color = "rgb(241, 76, 76)"
         document.getElementById('renameProjectButton').classList.add("blocked")
-    } else {
-        document.getElementsByClassName('pleaseEnterNamePrompt')[1].style.color = "transparent"
-        document.getElementById('renameProjectButton').classList.remove("blocked")
+        return
+    }
+    document.getElementsByClassName('pleaseEnterNamePrompt')[1].style.color = "transparent"
+    document.getElementById('renameProjectButton').classList.remove("blocked")
+
+    if (doesProjectExist(renameProjectName.value)) {
+        document.getElementsByClassName('pleaseEnterNamePrompt')[1].innerHTML = "A project with this name already exists."
+        document.getElementsByClassName('pleaseEnterNamePrompt')[1].style.color = "rgb(241, 76, 76)"
+        document.getElementById('renameProjectButton').classList.add("blocked")
     }
 }
 
@@ -214,6 +240,24 @@ function renameProject() {
     renameProjectName.value = ""
     renameProjectNameOnInput()
     document.getElementById("renameContainer").style.display = "none"
+}
+
+/**
+ * 
+ * @param {Boolean} show 
+ */
+
+function openCloseDeleteContainer(show) {
+    if (isNaN(selectedProjectCard)) return
+    document.getElementById("deleteContainer").style.display = show ? "grid" : "none"
+}
+
+function deleteProject() {
+    if (isNaN(selectedProjectCard)) return
+    allProjects.splice(selectedProjectCard, 1)
+    localStorage.projects = JSON.stringify(allProjects)
+    loadAllProjects()
+    document.getElementById("deleteContainer").style.display = "none"
 }
 
 openPage(0)

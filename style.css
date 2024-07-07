@@ -21,14 +21,14 @@ a:hover {
 }
 
 p {
-    font-family: "Palo", monospace;
+    font-family: "Cousine";
     font-weight: bolder;
     color: white;
     user-select: none;
 }
 
 thick {
-    font-family: "Palo", monospace;
+    font-family: sans-serif;
     color: white;
     user-select: none;
     font-size: 3vh;
@@ -36,7 +36,7 @@ thick {
 
 thickname {
     font-size: 10vh;
-    font-family: "Palo", monospace;
+    font-family: "Cousine";
     font-weight: bolder;
     color: white;
     user-select: none;
@@ -186,33 +186,75 @@ word {
     background-color: var(--main-bg-color);
 }
 
-#renameContainer {
+#renameContainer,
+#copyContainer {
     position: fixed;
     top: 0;
     left: 0;
     bottom: 0;
     right: 0;
     display: none;
-    background-color: rgba(0, 0, 0, 0.2);
+    place-content: center;
+    background-color: rgba(0, 0, 0, 0.5);
 }
 
-#renameContainer > div {
-    position: absolute;
-    top: 20%;
-    left: 20%;
-    bottom: 20%;
-    right: 20%;
+#renameContainer > div,
+#copyContainer > div {
     display: grid;
     place-content: center;
+    padding: 2vh;
     background-color: var(--main-bg-color);
 }
 
-#renameContainer > div > div {
+#renameProjectName,
+#copyProjectName {
+    margin-top: 2vh;
+}
+
+#renameContainer > div > div,
+#copyContainer > div > div {
     display: grid;
     place-content: center;
     grid-template-columns: 16vw 16vw;
     gap: 1vh;
     margin-top: 5vh;
+}
+
+#deleteContainer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: none;
+    place-content: center;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+#deleteContainer > div {
+    display: grid;
+    place-content: center;
+    padding: 2vh;
+    background-color: var(--main-bg-color);
+}
+
+#deleteContainer > div > p {
+    color: rgb(255, 167, 42);
+    font-size: 2.4vh;
+    margin: 0;
+}
+
+#deleteContainer > div > div {
+    display: grid;
+    place-content: center space-between;
+    width: 100%;
+    grid-template-columns: 15vw 15vw;
+    margin-top: 2vh;
+}
+
+#deleteContainer > div > div > p {
+    width: 15vw;
+    margin: 0;
 }
 
 #loadProject > thickname {
@@ -268,10 +310,14 @@ word {
 
 #about > p:first-child {
     font-size: 2.2vh;
-    font-weight: normal;
 }
 
 #about > p:last-child {
     margin-top: 10vh;
     width: 10vw;
+}
+
+@font-face {
+    font-family: "Cousine";
+    src: url(images/Cousine-Bold.ttf);
 }
