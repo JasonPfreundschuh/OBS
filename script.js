@@ -1,5 +1,6 @@
 const newProjectName = document.getElementById("newProjectName")
 const renameProjectName = document.getElementById("renameProjectName")
+const copyProjectName = document.getElementById("copyProjectName")
 const pages = [
     document.getElementById("homeScreen"),
     document.getElementById("createNewProject"),
@@ -37,7 +38,6 @@ async function switchColorOfCharacters() {
  * 
  * @param {Number} page 
  */
-
 function openPage(page) {
     pages.forEach(currentPage => {
         currentPage.style.display = "none"
@@ -60,7 +60,6 @@ function openPage(page) {
  * 
  * @param {String} name 
  */
-
 function doesProjectExist(name) {
     for (let i = 0; i < allProjects.length; i++) {
         if (name == allProjects[i].name) return true
@@ -84,10 +83,15 @@ function newProjectNameOnInput() {
     }
 }
 
-function createNewProject() {
-    if (newProjectName.value == "") return
-    let newProject = {
-        name: newProjectName.value,
+/**
+ * 
+ * @param {String} name [optional] 
+ * @param {{}} newProject [optional] 
+ */
+function createNewProject(name = newProjectName.value, newProject) {
+    if (name == "") return
+    newProject = newProject != undefined ? structuredClone(newProject) : {
+        name: name,
         chips: [
             {
                 name: "AND",
@@ -135,13 +139,13 @@ function createNewProject() {
     convertChipCodesToString(newProject)
     allProjects.push(newProject)
     localStorage.projects = JSON.stringify(allProjects)
+    renameProject(allProjects.length - 1, name)
 }
 
 /**
  * 
  * @param {{}} project 
  */
-
 function convertChipCodesToString(project) {
     project.chips.forEach(chip => {
         if (!chip.usesCode) return
@@ -153,7 +157,6 @@ function convertChipCodesToString(project) {
  * 
  * @param {{}} project 
  */
-
 function convertChipCodesToFuncs(project) {
     project.chips.forEach(chip => {
         if (!chip.usesCode) return
@@ -183,7 +186,6 @@ function loadAllProjects() {
  * 
  * @param {Number} id 
  */
-
 function selectProjectCard(id) {
     allProjectCards.forEach((card, i) => {
         if (i == id) {
@@ -202,7 +204,6 @@ function selectProjectCard(id) {
  * 
  * @param {Boolean} show 
  */
-
 function openCloseRenameContainer(show) {
     if (isNaN(selectedProjectCard)) return
     if (show) {
@@ -231,10 +232,11 @@ function renameProjectNameOnInput() {
     }
 }
 
-function renameProject() {
-    if (isNaN(selectedProjectCard)) return
-    if (renameProjectName.value == "") return
-    allProjects[selectedProjectCard].name = renameProjectName.value
+function renameProject(id = selectedProjectCard, name = renameProjectName.value) {
+    if (isNaN(id)) return
+    if (name == "") return
+    if (doesProjectExist(name)) return
+    allProjects[id].name = name
     localStorage.projects = JSON.stringify(allProjects)
     loadAllProjects()
     renameProjectName.value = ""
@@ -246,7 +248,6 @@ function renameProject() {
  * 
  * @param {Boolean} show 
  */
-
 function openCloseDeleteContainer(show) {
     if (isNaN(selectedProjectCard)) return
     document.getElementById("deleteContainer").style.display = show ? "grid" : "none"
@@ -258,6 +259,50 @@ function deleteProject() {
     localStorage.projects = JSON.stringify(allProjects)
     loadAllProjects()
     document.getElementById("deleteContainer").style.display = "none"
+}
+
+
+/**
+ * 
+ * @param {Boolean} show 
+ */
+function openCloseCopyContainer(show) {
+    if (isNaN(selectedProjectCard)) return
+    if (show) {
+        document.getElementById("copyContainer").style.display = "grid"
+        copyProjectName.focus()
+    } else {
+        document.getElementById("copyContainer").style.display = "none"
+        copyProjectName.value = ""
+    }
+}
+
+function copyProjectNameOnInput() {
+    if (copyProjectName.value == "") {
+        document.getElementsByClassName('pleaseEnterNamePrompt')[2].innerHTML = "Please enter a name for your project."
+        document.getElementsByClassName('pleaseEnterNamePrompt')[2].style.color = "rgb(241, 76, 76)"
+        document.getElementById('copyProjectButton').classList.add("blocked")
+        return
+    }
+    document.getElementsByClassName('pleaseEnterNamePrompt')[2].style.color = "transparent"
+    document.getElementById('copyProjectButton').classList.remove("blocked")
+
+    if (doesProjectExist(copyProjectName.value)) {
+        document.getElementsByClassName('pleaseEnterNamePrompt')[2].innerHTML = "A project with this name already exists."
+        document.getElementsByClassName('pleaseEnterNamePrompt')[2].style.color = "rgb(241, 76, 76)"
+        document.getElementById('copyProjectButton').classList.add("blocked")
+    }
+}
+
+function copyProject() {
+    if (isNaN(selectedProjectCard)) return
+    if (copyProjectName.value == "") return
+    if (doesProjectExist(copyProjectName.value)) return
+    createNewProject(copyProjectName.value, allProjects[selectedProjectCard])
+    loadAllProjects()
+    copyProjectName.value = ""
+    copyProjectNameOnInput()
+    document.getElementById("copyContainer").style.display = "none"
 }
 
 openPage(0)
