@@ -98,70 +98,70 @@ function createNewProject(name = newProjectName.value, newProject) {
                 usesCode: true,
                 inputPins: [{
                     id: 0,
-                    name: "PIN 1",
-                    color: "Red"
+                    name: "In 0",
+                    color: "red"
                 },
                 {
                     id: 1,
-                    name: "PIN 2",
-                    color: "Red"
+                    name: "In 1",
+                    color: "red"
                 }],
                 outputPins: [{
                     id: 0,
-                    name: "PIN 3",
-                    color: "Red"
+                    name: "Out",
+                    color: "red"
                 }],
-                code: () => {
-                    this.outputPins[0].state = this.inputPins[0].state && this.inputPins[1].state
-                }
+                code: "this.outputPins[0].state = this.inputPins[0].state && this.inputPins[1].state",
+                color: "dodgerblue"
             },
             {
                 name: "NOT",
                 usesCode: true,
                 inputPins: [{
                     id: 0,
-                    name: "PIN 1",
-                    color: "Red"
+                    name: "In",
+                    color: "red"
                 }],
                 outputPins: [{
                     id: 0,
-                    name: "PIN 2",
-                    color: "Red"
+                    name: "Out",
+                    color: "red"
                 }],
-                code: () => {
-                    this.outputPins[0].state = !this.inputPins[0].state
-                }
+                code: "this.outputPins[0].state = !this.inputPins[0].state",
+                color: "red"
+            },
+            {
+                name: "CLOCK",
+                usesCode: true,
+                inputPins: [
+                    {
+                        id: 0,
+                        name: "Freq 0",
+                        color: "red"
+                    },
+                    {
+                        id: 1,
+                        name: "Freq 1",
+                        color: "red"
+                    }
+                ],
+                outputPins: [
+                    {
+                        id: 0,
+                        name: "Out",
+                        color: "red"
+                    }
+                ],
+                code: "this.outputPins[0].state = Simulation.clockIsHigh(Number(this.inputPins[0].state) + (Number(this.inputPins[1].state) << 1))",
+                color: "black"
             }
         ],
         starredChips: ["AND", "NOT"]
     }
     currentProject = newProject
-    convertChipCodesToString(newProject)
     allProjects.push(newProject)
     localStorage.projects = JSON.stringify(allProjects)
     renameProject(allProjects.length - 1, name)
-}
-
-/**
- * 
- * @param {{}} project 
- */
-function convertChipCodesToString(project) {
-    project.chips.forEach(chip => {
-        if (!chip.usesCode) return
-        chip.code = chip.code.toString()
-    })
-}
-
-/**
- * 
- * @param {{}} project 
- */
-function convertChipCodesToFuncs(project) {
-    project.chips.forEach(chip => {
-        if (!chip.usesCode) return
-        chip.code = eval(chip.code)
-    })
 }
 
 function getAllProjects() {
@@ -303,6 +303,15 @@ function copyProject() {
     copyProjectName.value = ""
     copyProjectNameOnInput()
     document.getElementById("copyContainer").style.display = "none"
+}
+
+/**
+ * 
+ * @param {Number} id 
+ */
+function openProject(id = selectedProjectCard) {
+    if (isNaN(id)) return
+    window.location.href = `${window.location.href}editor/?project=${id}`
 }
 
 openPage(0)

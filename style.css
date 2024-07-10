@@ -183,6 +183,7 @@ word {
     right: 0;
     display: none;
     place-content: center;
+    gap: 5vh;
     background-color: var(--main-bg-color);
 }
 
@@ -259,7 +260,8 @@ word {
 
 #loadProject > thickname {
     display: grid;
-    place-content: center
+    place-content: center;
+    font-size: 8vh;
 }
 
 #projectList {
@@ -284,16 +286,16 @@ word {
     background-color: rgb(92, 92, 92);
 }
 
-#loadProject > div:last-child {
+#loadProjectButtons {
     display: grid;
     place-content: center;
-    grid-template-columns: 10vw 10vw 10vw 10vw 10vw;
-    gap: 1vh;
-    margin-top: 5vh;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    gap: 1.5vh;
 }
 
-#loadProject > div:last-child > p {
+#loadProjectButtons > p {
     width: 10vw;
+    margin: 0;
 }
 
 #about {

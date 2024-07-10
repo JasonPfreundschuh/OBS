@@ -89,12 +89,12 @@
         </div>
         <thickname>LOAD PROJECT</thickname>
         <div id="projectList"></div>
-        <div>
+        <div id="loadProjectButtons">
             <p class="buttonP" onclick="openPage(0); selectProjectCard(NaN)">BACK</p>
             <p class="buttonP blocked" onclick="openCloseDeleteContainer(true)">DELETE</p>
             <p class="buttonP blocked" onclick="openCloseRenameContainer(true)">RENAME</p>
             <p class="buttonP blocked" onclick="openCloseCopyContainer(true)">COPY</p>
-            <p class="buttonP blocked">OPEN</p>
+            <p class="buttonP blocked" onclick="openProject()">OPEN</p>
         </div>
     </div>
     <div id="settings"></div>

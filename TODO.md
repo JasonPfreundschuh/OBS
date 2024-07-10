@@ -1,4 +1,4 @@
-- Copy projects
+- <span style="color: gray;">~~Copy projects~~
 - Add settings <span style="color: yellow;">(auto-save, toggle pin names, remember last session, etc.)
 - Make Editor
   - Canvas <span style="color: cornflowerblue;">(expandable)<span style="color: white;">
