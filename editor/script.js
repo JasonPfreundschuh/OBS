@@ -153,7 +153,11 @@ function addChipsToStarredList() {
         let chip = document.createElement("div")
         chip.classList.add("starredChip")
         chip.innerText = starredChip
-        chip.setAttribute("onclick", `addChip("${starredChip.name}")`)
+        chip.onclick = e => {
+            addChip(starredChip, e.pageX - offset.x, e.pageY - offset.y)
+            currentChip.subChips.forEach(chip => chip.move = false)
+            currentChip.subChips[currentChip.subChips.length - 1].move = true
+        }
         document.getElementById("starredChipsList").appendChild(chip)
     })
 }
