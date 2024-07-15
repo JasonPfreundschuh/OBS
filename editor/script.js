@@ -267,6 +267,10 @@ window.addEventListener("mousemove", e => {
     })
 })
 
+window.addEventListener("mouseup", e => {
+    currentChip.subChips.forEach(chip => chip.move = false)
+})
+
 window.addEventListener("mousewheel", e => {
     if (e.deltaY < 0 && zoom * 2 <= 512) zoom *= 2
     if (e.deltaY > 0 && zoom / 2 > 0.03) zoom /= 2
