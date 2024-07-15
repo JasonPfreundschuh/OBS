@@ -84,11 +84,13 @@ word {
     background-color: var(--red-accent-color);
 }
 
-#createNewProjectButton:not(.blocked) {
+#createNewProjectButton:not(.blocked),
+#loadProjectButtons > p:last-child:not(.blocked) {
     background-color: rgb(50, 100, 145);
 }
 
-#createNewProjectButton:not(.blocked):hover {
+#createNewProjectButton:not(.blocked):hover,
+#loadProjectButtons > p:last-child:not(.blocked):hover {
     color: black;
     background-color: rgb(118, 202, 238);
 }
@@ -321,5 +323,5 @@ word {
 
 @font-face {
     font-family: "Cousine";
-    src: url(images/Cousine-Bold.ttf);
+    src: url(./images/Cousine-Bold.ttf);
 }

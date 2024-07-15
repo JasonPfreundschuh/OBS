@@ -1,0 +1,89 @@
+:root {
+    --main-bg-color: rgb(43, 43, 43);
+    --sec-bg-color: rgb(31, 31, 31);
+    --tri-bg-color: rgb(63, 63, 63);
+    --red-accent-color: rgb(241, 76, 76);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    border: none;
+    outline: none;
+    background-color: transparent;
+}
+
+nav {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    height: 5.5vh;
+    padding: 0.5vh;
+    background-color: black;
+}
+
+#menuButton {
+    display: grid;
+    place-content: center;
+    height: 4.5vh;
+    width: 6.5vw;
+    font-size: 2.5vh;
+    font-family: "Cousine";
+    color: white;
+    background-color: rgb(50, 100, 145);
+}
+
+#menuButton:hover {
+    background-color: rgb(118, 202, 238);
+}
+
+#starredChipsList {
+    display: flex;
+    position: absolute;
+    left: calc(1vh + 6.5vw);
+    bottom: 0.5vh;
+    right: 0.5vh;
+    height: 4.5vh;
+    margin-left: 0.5vh;
+    overflow-x: scroll;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+#starredChipsList::-webkit-scrollbar {
+    display: none;
+}
+
+.starredChip {
+    display: grid;
+    place-content: center;
+    height: 4.5vh;
+    width: fit-content;
+    margin-right: 0.5vh;
+    padding: 0.5vw;
+    font-size: 2.5vh;
+    font-family: sans-serif;
+    color: white;
+    background-color: var(--tri-bg-color);
+    user-select: none;
+}
+
+.starredChip:hover {
+    color: black;
+    background-color: white;
+}
+
+#menu {
+    display: none;
+    position: fixed;
+    left: 0;
+    bottom: 5.5vh;
+    background-color: white;
+}
+
+@font-face {
+    font-family: "Cousine";
+    src: url(../images/Cousine-Bold.ttf);
+}

@@ -16,9 +16,11 @@ var characterColor = 0
 
 async function switchColorOfCharacters() {
     await new Promise(resolve => setTimeout(resolve, 3000))
+
     characterColor++
     if (characterColor > 2) characterColor = 0
     let words = document.getElementById("gameName").children
+
     for (let i = 0; i < words.length; i++) {
         let characters = words[i].children
         for (let j = 0; j < characters.length; j++) {
@@ -86,7 +88,7 @@ function newProjectNameOnInput() {
 /**
  * 
  * @param {String} name [optional] 
- * @param {{}} newProject [optional] 
+ * @param {Project} newProject [optional] 
  */
 function createNewProject(name = newProjectName.value, newProject) {
     if (name == "") return
@@ -232,6 +234,11 @@ function renameProjectNameOnInput() {
     }
 }
 
+/**
+ * 
+ * @param {Number} id 
+ * @param {String} name 
+ */
 function renameProject(id = selectedProjectCard, name = renameProjectName.value) {
     if (isNaN(id)) return
     if (name == "") return
@@ -260,7 +267,6 @@ function deleteProject() {
     loadAllProjects()
     document.getElementById("deleteContainer").style.display = "none"
 }
-
 
 /**
  * 
@@ -311,7 +317,7 @@ function copyProject() {
  */
 function openProject(id = selectedProjectCard) {
     if (isNaN(id)) return
-    window.location.href = `${window.location.href}editor/?project=${id}`
+    window.location.href = `${window.location.origin}/editor/?project=${id}`
 }
 
 openPage(0)
