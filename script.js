@@ -158,7 +158,7 @@ function createNewProject(name = newProjectName.value, newProject) {
                 color: "black"
             }
         ],
-        starredChips: ["AND", "NOT"]
+        starredChips: ["AND", "NOT", "CLOCK"]
     }
     currentProject = newProject
     allProjects.push(newProject)
