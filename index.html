@@ -41,23 +41,23 @@
         </div>
         <div id="credits">
             <p>Created by: Sebastian Lague</p>
-            <p>Reverse engineered: Jason</p>
-            <p>Version: 1.0.0 (alpha) Last Updated: --/--/--</p>
+            <p>Reverse engineered by: Jason</p>
+            <p>Version: 1.0.0 (05/05/25)</p>
         </div>
     </div>
     <div id="createNewProject">
         <thickname>CREATE PROJECT</thickname>
-        <input id="newProjectName" type="text" placeholder="Name" oninput="newProjectNameOnInput()">
+        <input id="newProjectName" type="text" placeholder="Name" autocomplete="off" oninput="newProjectNameOnInput()">
         <p class="pleaseEnterNamePrompt">Please enter a name for your project.</p>
         <div>
             <p class="buttonP" onclick="openPage(0)">BACK</p>
-            <p id="createNewProjectButton" class="buttonP blocked" onclick="createNewProject()">CREATE</p>
+            <p id="createNewProjectButton" class="buttonP blocked" onclick="createNewProject(); openProject(allProjects.length - 1)">CREATE</p>
         </div>
     </div>
     <div id="loadProject">
         <div id="renameContainer">
             <div>
-                <input id="renameProjectName" type="text" placeholder="Name" oninput="renameProjectNameOnInput()">
+                <input id="renameProjectName" type="text" placeholder="Name" autocomplete="off" oninput="renameProjectNameOnInput()">
                 <p class="pleaseEnterNamePrompt">Please enter a name for your project.</p>
                 <div>
                     <p class="buttonP" onclick="openCloseRenameContainer(false)">BACK</p>
@@ -79,7 +79,7 @@
         </div>
         <div id="copyContainer">
             <div>
-                <input id="copyProjectName" type="text" placeholder="Name" oninput="copyProjectNameOnInput()">
+                <input id="copyProjectName" type="text" placeholder="Name" autocomplete="off" oninput="copyProjectNameOnInput()">
                 <p class="pleaseEnterNamePrompt">Please enter a name for your project.</p>
                 <div>
                     <p class="buttonP" onclick="openCloseCopyContainer(false)">BACK</p>

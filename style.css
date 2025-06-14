@@ -1,6 +1,6 @@
 :root {
-    --main-bg-color: rgb(43, 43, 43);
-    --sec-bg-color: rgb(31, 31, 31);
+    --main-bg-color: rgb(47, 47, 53);
+    --sec-bg-color: rgb(37, 37, 43);
     --tri-bg-color: rgb(63, 63, 63);
     --red-accent-color: rgb(241, 76, 76);
 }
@@ -58,12 +58,11 @@ word {
     font-size: 3vh;
     margin: 0.5vh;
     cursor: pointer;
-    background-color: rgb(67, 64, 64);
+    background-color: rgb(73, 73, 82);
 }
 
 .buttonP:not(.blocked):hover {
-    color: black;
-    background-color: white;
+    background-color: rgb(72, 108, 233);
 }
 
 .pleaseEnterNamePrompt {
@@ -81,18 +80,12 @@ word {
 }
 
 .selected {
-    background-color: var(--red-accent-color);
+    background-color: rgb(72, 108, 233);
 }
 
-#createNewProjectButton:not(.blocked),
-#loadProjectButtons > p:last-child:not(.blocked) {
-    background-color: rgb(50, 100, 145);
-}
-
-#createNewProjectButton:not(.blocked):hover,
-#loadProjectButtons > p:last-child:not(.blocked):hover {
-    color: black;
-    background-color: rgb(118, 202, 238);
+.rightAligned {
+    left: 0;
+    text-align: right;
 }
 
 #homeScreen {
@@ -110,7 +103,7 @@ word {
     justify-content: center;
     align-items: center;
     height: 20vh;
-    background-color: rgb(31, 31, 31);
+    background-color: transparent;
 }
 
 #homeScreenOptions {
@@ -132,7 +125,7 @@ word {
     height: 8.8vh;
     display: flex;
     justify-content: space-between;
-    background-color: rgb(31, 31, 31);
+    background-color: var(--sec-bg-color);
 }
 
 #credits > p {
@@ -153,7 +146,8 @@ word {
 }
 
 #newProjectName,
-#renameProjectName {
+#renameProjectName,
+#copyProjectName {
     height: 7vh;
     margin-top: 10vh;
     font-size: 5vh;
@@ -271,21 +265,31 @@ word {
     place-self: center;
     align-content: start;
     height: 60vh;
-    width: 35vw;
+    width: calc(5 * 10vw + 4 * 1.5vh);
     background-color: var(--tri-bg-color);
 }
 
 .projectCard {
-    display: grid;
+    display: flex;
     align-items: center;
+    justify-content: space-between;
     padding-left: 2vh;
+    padding-right: 2vh;
     height: 6vh;
+    width: calc(5 * 10vw + 4 * 1.5vh);
     font-size: 2.8vh;
     font-weight: normal;
 }
 
 .projectCard:not(.selected):hover {
     background-color: rgb(92, 92, 92);
+}
+
+.scrolling-text-wrapper {
+    flex: 1;
+    overflow: hidden;
+    margin-right: 2vh;
+    white-space: nowrap;
 }
 
 #loadProjectButtons {
