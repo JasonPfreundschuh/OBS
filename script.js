@@ -28,7 +28,7 @@ var standardChips = [
         outputPins: [{
             id: 0,
             name: "Out",
-            color: "ff0000"
+            color: "#ff0000"
         }],
         code: "this.outputPins[0].state = this.inputPins[0].state && this.inputPins[1].state",
         color: "#1e90ff"
@@ -43,7 +43,7 @@ var standardChips = [
         outputPins: [{
             id: 0,
             name: "Out",
-            color: "ff0000"
+            color: "#ff0000"
         }],
         code: "this.outputPins[0].state = !this.inputPins[0].state",
         color: "#ff0000"
@@ -65,7 +65,7 @@ var standardChips = [
             {
                 id: 0,
                 name: "Out",
-                color: "ff0000"
+                color: "#ff0000"
             }
         ],
         code: "this.outputPins[0].state = Simulation.clockIsHigh(Number(this.inputPins[0].state) + (Number(this.inputPins[1].state) << 1))",

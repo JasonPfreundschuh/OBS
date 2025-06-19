@@ -55,13 +55,14 @@ class Pin {
      * @param {Boolean} state - The state of the pin (true or false).
      * @param {Boolean} set - Whether the pin is settable (true or false).
      */
-    constructor(name, id, type, color, state, set) {
+    constructor(name, id, type, color, state, set, parent) {
         this.name = name
         this.id = id
         this.type = type
         this.color = color
         this.state = state
         this.set = set
+        this.parent = parent
     }
 
     /**
@@ -71,18 +72,18 @@ class Pin {
      * @param {Chip} parent - The parent chip of the pin.
      * @method draw
      */
-    draw(parent) {
-        let r = parent.r
-        let h = parent.height
-        let PL = this.type == "in" ? parent.inputPins.length : parent.outputPins.length
+    draw() {
+        let r = this.parent.r
+        let h = this.parent.height
+        let PL = this.type == "in" ? this.parent.inputPins.length : this.parent.outputPins.length
         let fontSize = 20 * zoom
         ctx.font = `${fontSize}px "Cousine"`
-        let textWidth = ctx.measureText(parent.name).width
+        let textWidth = ctx.measureText(this.parent.name).width
         let width = textWidth + 2 * 15 * zoom
 
-        this.x = this.type == "in" ? parent.x * zoom + offset.x - width / 2 : parent.x * zoom + offset.x + width / 2
+        this.x = this.type == "in" ? this.parent.x * zoom + offset.x - width / 2 : this.parent.x * zoom + offset.x + width / 2
         this.y =
-            parent.y * zoom +
+            this.parent.y * zoom +
             offset.y -
             (h * zoom) / 2 +
             (r +
@@ -135,21 +136,8 @@ class Chip {
         this.r = 7
         this.inputPinShadows = []
         this.outputPinShadows = []
-        this.setPinState()
         this.createPins()
         this.createShadowPins()
-    }
-
-    /**
-     * Resets the state and set properties of all input pins to false.
-     * This ensures that all pins start in a default unactivated state
-     * before any operations or connections are applied.
-     */
-    setPinState() {
-        this.inputPins.forEach(pin => {
-            pin.state = false
-            pin.set = false
-        })
     }
 
     /**
@@ -159,12 +147,13 @@ class Chip {
      */
     createPins() {
         this.tempInputPins.forEach((pin, index) => {
-            let newPin = new Pin(pin.name, index, "in", pin.color, pin.state, pin.set)
+            let newPin = new Pin(pin.name, index, "in", pin.color, false, false, this)
+            console.log(newPin)
             this.inputPins.push(newPin)
         })
 
         this.tempOutputPins.forEach((pin, index) => {
-            let newPin = new Pin(pin.name, index, "out", pin.color, pin.state, pin.set)
+            let newPin = new Pin(pin.name, index, "out", pin.color, false, false, this)
             this.outputPins.push(newPin)
         })
     }
@@ -203,25 +192,25 @@ class Chip {
                     },
                     draw: () => {
                         if (!tempConnectionLine.from && !tempConnectionLine.to) return
-    
+
                         let start = tempConnectionLine.to
-    
+
                         let startX = start.x
                         let startY = start.y
-    
+
                         ctx.beginPath()
                         ctx.lineWidth = 5 * zoom
                         ctx.strokeStyle = start.state ? start.color : "black"
                         ctx.moveTo(startX, startY)
-    
+
                         for (let i = 0; i < tempConnectionLine.posCords.length; i++) {
                             const point = tempConnectionLine.posCords[i]
                             ctx.lineTo(point.x * zoom + offset.x, point.y * zoom + offset.y)
                         }
-    
+
                         let end = tempConnectionLine.coursor
                         ctx.lineTo(end.x, end.y)
-    
+
                         ctx.stroke()
                         ctx.closePath()
                     }
@@ -259,25 +248,25 @@ class Chip {
                     },
                     draw: () => {
                         if (!tempConnectionLine.from && !tempConnectionLine.to) return
-    
+
                         let start = tempConnectionLine.from
-    
+
                         let startX = start.x
                         let startY = start.y
-    
+
                         ctx.beginPath()
                         ctx.lineWidth = 5 * zoom
                         ctx.strokeStyle = start.state ? start.color : "black"
                         ctx.moveTo(startX, startY)
-    
+
                         for (let i = 0; i < tempConnectionLine.posCords.length; i++) {
                             const point = tempConnectionLine.posCords[i]
                             ctx.lineTo(point.x * zoom + offset.x, point.y * zoom + offset.y)
                         }
-    
+
                         let end = tempConnectionLine.coursor
                         ctx.lineTo(end.x, end.y)
-    
+
                         ctx.stroke()
                         ctx.closePath()
                     }
@@ -305,8 +294,8 @@ class Chip {
         let width = textWidth + 2 * 15 * zoom
         this.width = width / zoom
 
-        this.inputPins.forEach(pin => pin.draw(this))
-        this.outputPins.forEach(pin => pin.draw(this))
+        this.inputPins.forEach(pin => pin.draw())
+        this.outputPins.forEach(pin => pin.draw())
 
         this.inputPinShadows.forEach((shadow, i) => {
             shadow.style.left = `${this.inputPins[i].x - r * zoom}px`
@@ -362,8 +351,8 @@ class Chip {
         let ogcolor = hexToRgb(this.color)
         ogcolor = [ogcolor.r, ogcolor.g, ogcolor.b, 1]
         let dimmcolor = [0, 0, 0, 0.4]
-        let endcolor = combineRGBA(...ogcolor, ...dimmcolor)
-        ctx.fillStyle = `rgba(${endcolor[0]}, ${endcolor[1]}, ${endcolor[2]}, ${endcolor[3]})`
+        let endColor = combineRGBA(...ogcolor, ...dimmcolor)
+        ctx.fillStyle = `rgba(${endColor[0]}, ${endColor[1]}, ${endColor[2]}, ${endColor[3]})`
         ctx.rect(
             this.x * zoom + offset.x - width / 2,
             this.y * zoom + offset.y - h * zoom / 2,
@@ -421,10 +410,16 @@ class ConnectionLine {
 
         const start = this.from
         const end = this.to
+        
+        let ogcolor = hexToRgb(start.color)
+        ogcolor = [ogcolor.r, ogcolor.g, ogcolor.b, 1]
+        let dimmcolor = [0, 0, 0, 0.8]
+        let endColor = combineRGBA(...ogcolor, ...dimmcolor)
+        endColor = `rgba(${endColor[0]}, ${endColor[1]}, ${endColor[2]}, ${endColor[3]})`
 
         ctx.beginPath()
         ctx.lineWidth = 5 * zoom
-        ctx.strokeStyle = start.state ? start.color : "black"
+        ctx.strokeStyle = start.state ? start.color : endColor
         ctx.moveTo(start.x, start.y)
 
         for (let i = 0; i < this.posCords.length; i++) {
@@ -462,18 +457,24 @@ var currentChip = {
     subChips: [],
     connections: [],
     inputPins: [{
-        name: "In",
-        color: "red",
+        name: 0,
+        id: 0,
+        type: "in",
+        color: "#00ff00",
         state: false,
         set: true
     }],
     outputPins: [{
-        name: "Out",
-        color: "red",
+        name: 0,
+        id: 0,
+        type: "out",
+        color: "#00ff00",
         state: false,
-        set: false
+        set: true
     }]
 }
+currentChip.inputPins[0].parent = currentChip
+currentChip.outputPins[0].parent = currentChip
 
 /**
  * Combine two rgba colors using the source-over operator.
@@ -712,7 +713,6 @@ function simulateCurrentChip() {
     if (tempConnectionLine != null) tempConnectionLine.draw()
 
     currentChip.subChips.forEach(chip => chip.draw())
-    console.log(currentChip.outputPins[0].state)
 }
 
 /**
@@ -723,42 +723,11 @@ function simulateCurrentChip() {
  */
 function simulateChip(chip) {
     if (chip.usesCode) return chip.code()
-    chip.inputPins.forEach(pin => executeChipFromConnectionOfPin(chip, pin))
-}
 
-/**
- * Executes a chip from a given connection of a given pin. It sets the state of
- * the pin on the other end of the connection and recursively calls itself on
- * the chip on the other end of the connection if all of the input pins of the
- * chip are set.
- * @param {Chip} originChip - The chip from which to execute the connection.
- * @param {Pin} pin - The pin from which to execute the connection.
- */
-function executeChipFromConnectionOfPin(originChip, pin) {
-    originChip.connections.filter(connection => {
-        if (connection.from == pin) {
-            if (connection.to == originChip) {
-                connection.to.outputPins[connection.toChipPin].state = pin.state
-                connection.to.outputPins[connection.toChipPin].set = true
-                return
-            }
-
-            connection.to.inputPins[connection.toChipPin].state = pin.state
-            connection.to.inputPins[connection.toChipPin].set = true
-
-            // Check if all the input pins are set
-            // If not, don't execute chip
-            if (connection.to.inputPins.some(inputPin => {
-                if (inputPin.set) return false
-                return originChip.connections.some(subChipConnection => {
-                    return subChipConnection.to.inputPins[subChipConnection.toChipPin] == inputPin
-                })
-            })) return
-
-            simulateChip(connection.to)
-            connection.to.outputPins.forEach(outPin => executeChipFromConnectionOfPin(originChip, outPin))
-        }
+    chip.connections.forEach(connection => {
+        connection.to.state = connection.from.state
     })
+    chip.subChips.forEach(chip => simulateChip(chip))
 }
 
 /**
