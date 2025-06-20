@@ -29,19 +29,8 @@ const diffMouseChipPos = {
 const simulationLoop = setInterval(simulateCurrentChip, 1)
 const Simulation = {
     time: 0,
-    clockIsHigh(frequency) {
-        switch (frequency) {
-            case 0:
-                return this.time % 1 >= 0.5
-            case 1:
-                return this.time % 0.5 >= 0.25
-            case 2:
-                return this.time % 2 >= 1
-            case 3:
-                return this.time % 4 >= 2
-            default:
-                return false
-        }
+    isClockHigh() {
+        return this.time % 1 >= 0.5
     }
 }
 
@@ -148,7 +137,6 @@ class Chip {
     createPins() {
         this.tempInputPins.forEach((pin, index) => {
             let newPin = new Pin(pin.name, index, "in", pin.color, false, false, this)
-            console.log(newPin)
             this.inputPins.push(newPin)
         })
 
@@ -722,13 +710,48 @@ function simulateCurrentChip() {
  * @param {Chip} chip - The chip to simulate.
  */
 function simulateChip(chip) {
-    if (chip.usesCode) return chip.code()
+    let changed = true
+    const MAX_ITERATIONS = 100 // plz dont crash on me
+    let iterations = 0
 
-    chip.connections.forEach(connection => {
-        connection.to.state = connection.from.state
-    })
-    chip.subChips.forEach(chip => simulateChip(chip))
+    while (changed && iterations++ < MAX_ITERATIONS) {
+        changed = false
+
+        // simulate all subChips
+        chip.subChips.forEach(subChip => {
+            if (subChip.usesCode) {
+                const oldStates = subChip.outputPins.map(p => p.state)
+                subChip.code()
+                const newStates = subChip.outputPins.map(p => p.state)
+                if (!arraysEqual(oldStates, newStates)) changed = true
+            }
+        })
+
+        // stream signal through connections
+        chip.connections.forEach(connection => {
+            const oldState = connection.to.state
+            connection.to.state = connection.from.state
+            if (oldState !== connection.to.state) changed = true
+        })
+    }
 }
+
+/**
+ * Checks if two arrays are equal. If the arrays are of different lengths, the
+ * function immediately returns false. Otherwise, it checks each element of the
+ * arrays for equality, returning false as soon as it finds a mismatch.
+ * @param {Array} a - The first array to compare.
+ * @param {Array} b - The second array to compare.
+ * @returns {Boolean} - Whether the arrays are equal.
+ */
+function arraysEqual(a, b) {
+    if (a.length !== b.length) return false
+    for (let i = 0; i < a.length; i++) {
+        if (a[i] !== b[i]) return false
+    }
+    return true
+}
+
 
 /**
  * Checks if the mouse is currently on the given chip.
