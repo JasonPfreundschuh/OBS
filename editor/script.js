@@ -689,7 +689,7 @@ function drawGrid() {
 function simulateCurrentChip() {
     Simulation.time += 0.01
 
-    simulateChip(currentChip)
+    simulateChipHybrid(currentChip)
     ctx.beginPath()
     ctx.fillStyle = "rgb(47, 47, 53)"
     ctx.rect(0, 0, displayWidth, displayHeight)
@@ -704,36 +704,140 @@ function simulateCurrentChip() {
 }
 
 /**
- * Simulates the behavior of a given chip. If the chip uses code, it executes
- * the chip's code function. Otherwise, it processes each input pin by executing
- * the chip from the connection of the pin.
- * @param {Chip} chip - The chip to simulate.
+ * Simulates the behavior of a given chip by executing code associated with its sub-chips.
+ * The function first constructs a dependency graph of the chip's sub-chips and detects any
+ * cycles within it. Connections between pins are set based on the current state of the chip.
+ * A topological sort is performed on the acyclic components of the graph, and the associated
+ * code is executed for each sub-chip. For chips involved in cycles, an iterative stabilization
+ * process is performed, recalculating states until no further changes occur or a maximum number
+ * of iterations is reached. Finally, the function updates the states of connections based on
+ * the latest changes.
+ * 
+ * @param {Chip} chip - The chip to be simulated.
  */
-function simulateChip(chip) {
-    let changed = true
-    const MAX_ITERATIONS = 100 // plz dont crash on me
-    let iterations = 0
+function simulateChipHybrid(chip) {
+    const graph = buildDependencyGraph(chip)
+    const cycleChips = detectCycles(graph)
 
-    while (changed && iterations++ < MAX_ITERATIONS) {
-        changed = false
+    // Set connections
+    chip.connections.forEach(conn => {
+        conn.to.state = conn.from.state
+    })
+    
+    // New filtered graph copy only with acyclic chips
+    const filteredGraph = new Map()
+    for (const [node, deps] of graph.entries()) {
+        if (!cycleChips.has(node)) {
+            filteredGraph.set(node, new Set([...deps].filter(d => !cycleChips.has(d))))
+        }
+    }
+    
+    // TopoSort on non-cyclic subgraphs
+    const sorted = topoSort(filteredGraph)
+    
+    for (const sub of sorted) {
+        if (sub.usesCode) sub.code()
+        else simulateChipHybrid(sub)
 
-        // simulate all subChips
-        chip.subChips.forEach(subChip => {
-            if (subChip.usesCode) {
-                const oldStates = subChip.outputPins.map(p => p.state)
-                subChip.code()
-                const newStates = subChip.outputPins.map(p => p.state)
-                if (!arraysEqual(oldStates, newStates)) changed = true
+        // Right after: set connections
+        chip.connections.forEach(conn => {
+            if (conn.from.parent === sub && !cycleChips.has(conn.to.parent)) {
+                conn.to.state = conn.from.state
             }
         })
-
-        // stream signal through connections
-        chip.connections.forEach(connection => {
-            const oldState = connection.to.state
-            connection.to.state = connection.from.state
-            if (oldState !== connection.to.state) changed = true
-        })
     }
+
+    // Iterative stabilization only for chips in the cycle
+    for (const sub of cycleChips) {
+        if (sub.usesCode) sub.code()
+        else simulateChipHybrid(sub)
+    }
+}
+
+/**
+ * Builds a directed graph of dependencies from a given chip.
+ * Each sub-chip is a node in the graph, and each connection is a directed edge
+ * from the source sub-chip to the target sub-chip.
+ * @param {Chip} chip - The chip whose dependency graph is to be built.
+ * @returns {Map<Chip, Set<Chip>>} - The dependency graph of the given chip.
+ */
+function buildDependencyGraph(chip) {
+    const graph = new Map()
+    chip.subChips.forEach(sub => graph.set(sub, new Set()))
+
+    chip.connections.forEach(conn => {
+        const source = conn.from.parent
+        const target = conn.to.parent
+        if (source !== target) {
+            graph.get(target).add(source)
+        }
+    })
+
+    return graph
+}
+
+/**
+ * Detects cycles in a directed graph.
+ * @param {Map<Node, Set<Node>>} graph - The graph to search for cycles in.
+ * @returns {Set<Node>} - The set of nodes that are part of a cycle.
+ */
+function detectCycles(graph) {
+    const visited = new Set()
+    const stack = new Set()
+    const inCycle = new Set()
+
+    function dfs(node) {
+        if (stack.has(node)) {
+            // Zyklus entdeckt
+            inCycle.add(node)
+            return
+        }
+        if (visited.has(node)) return
+
+        visited.add(node)
+        stack.add(node)
+
+        for (const neighbor of graph.get(node)) {
+            dfs(neighbor)
+            if (inCycle.has(neighbor)) inCycle.add(node)
+        }
+
+        stack.delete(node)
+    }
+
+    for (const node of graph.keys()) {
+        dfs(node)
+    }
+
+    return inCycle
+}
+
+/**
+ * Topological sorting of a directed acyclic graph (DAG)
+ * @param {Map<string, Set<string>>} graph - The graph to sort
+ * @returns {string[]} - The nodes in a topologically sorted order
+ */
+function topoSort(graph) {
+    const sorted = []
+    const visited = new Set()
+
+    function visit(node, stack = new Set()) {
+        if (stack.has(node)) return
+        if (visited.has(node)) return
+
+        stack.add(node)
+        graph.get(node).forEach(dep => visit(dep, stack))
+        stack.delete(node)
+
+        visited.add(node)
+        sorted.push(node)
+    }
+
+    for (let node of graph.keys()) {
+        visit(node)
+    }
+
+    return sorted
 }
 
 /**
@@ -751,7 +855,6 @@ function arraysEqual(a, b) {
     }
     return true
 }
-
 
 /**
  * Checks if the mouse is currently on the given chip.
