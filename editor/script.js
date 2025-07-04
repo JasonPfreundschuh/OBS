@@ -841,22 +841,6 @@ function topoSort(graph) {
 }
 
 /**
- * Checks if two arrays are equal. If the arrays are of different lengths, the
- * function immediately returns false. Otherwise, it checks each element of the
- * arrays for equality, returning false as soon as it finds a mismatch.
- * @param {Array} a - The first array to compare.
- * @param {Array} b - The second array to compare.
- * @returns {Boolean} - Whether the arrays are equal.
- */
-function arraysEqual(a, b) {
-    if (a.length !== b.length) return false
-    for (let i = 0; i < a.length; i++) {
-        if (a[i] !== b[i]) return false
-    }
-    return true
-}
-
-/**
  * Checks if the mouse is currently on the given chip.
  * @param {MouseEvent} e - The event to check.
  * @param {Chip} chip - The chip to check against.
