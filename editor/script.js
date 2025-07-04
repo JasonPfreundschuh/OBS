@@ -747,7 +747,7 @@ function simulateChipHybrid(chip) {
         })
     }
 
-    // Iterative stabilization only for chips in the cycle
+    // Normal chip simulation for chips in cycles
     for (const sub of cycleChips) {
         if (sub.usesCode) sub.code()
         else simulateChipHybrid(sub)
