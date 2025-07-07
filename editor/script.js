@@ -10,6 +10,32 @@ const offset = {
 	y: displayHeight / 2
 }
 
+/**
+ * Wandelt Bildschirmkoordinaten (z. B. Mausposition) in Simulatorkoordinaten um.
+ * @param {number} screenX - X-Position auf dem Bildschirm (z. B. Maus).
+ * @param {number} screenY - Y-Position auf dem Bildschirm.
+ * @returns {{x: number, y: number}} - Position im Simulator.
+ */
+function screenToSim(screenX, screenY) {
+	return {
+		x: (screenX - offset.x) / zoom,
+		y: (screenY - offset.y) / zoom
+	}
+}
+
+/**
+ * Wandelt Simulatorkoordinaten in Bildschirmkoordinaten um.
+ * @param {number} simX - X-Position im Simulationsraum.
+ * @param {number} simY - Y-Position im Simulationsraum.
+ * @returns {{x: number, y: number}} - Position auf dem Bildschirm.
+ */
+function simToScreen(simX, simY) {
+	return {
+		x: simX * zoom + offset.x,
+		y: simY * zoom + offset.y
+	}
+}
+
 var isPanning = false
 const panPos = {
 	x: 0,
@@ -157,13 +183,23 @@ class Chip {
 		this.inputPins.forEach(pin => {
 			let shadow = document.createElement("div")
 			shadow.classList.add("pinShadow")
+			shadow.onmouseover = () => {
+				shadow.style.cursor = "pointer"
+				shadow.style.backgroundColor = tempConnectionLine?.to != null ? "gray" : "white"
+			}
+
+			shadow.onmouseleave = () => {
+				shadow.style.cursor = "default"
+				shadow.style.backgroundColor = "transparent"
+			}
+
 			shadow.id = `inShadow-${this.id}-${pin.id}`
 
-			shadow.addEventListener("click", () => {
+			shadow.addEventListener("click", e => {
 				if (tempConnectionLine != null) {
 					if (tempConnectionLine.to != null) return tempConnectionLine.posCords.pop()
 					tempConnectionLine.to = pin
-					tempConnectionLine.posCords.pop()
+					if (!isMouseOnChip(e, pin.parent)) tempConnectionLine.posCords.pop()
 					let connection = new ConnectionLine(tempConnectionLine.from, tempConnectionLine.to, tempConnectionLine.posCords)
 					currentChip.connections.push(connection)
 					tempConnectionLine = null
@@ -212,13 +248,23 @@ class Chip {
 		this.outputPins.forEach(pin => {
 			let shadow = document.createElement("div")
 			shadow.classList.add("pinShadow")
+			shadow.onmouseover = () => {
+				shadow.style.cursor = "pointer"
+				shadow.style.backgroundColor = tempConnectionLine?.from != null ? "gray" : "white"
+			}
+
+			shadow.onmouseleave = () => {
+				shadow.style.cursor = "default"
+				shadow.style.backgroundColor = "transparent"
+			}
+
 			shadow.id = `outShadow-${this.id}-${pin.id}`
 
-			shadow.addEventListener("click", () => {
+			shadow.addEventListener("click", e => {
 				if (tempConnectionLine != null) {
 					if (tempConnectionLine.from != null) return tempConnectionLine.posCords.pop()
 					tempConnectionLine.from = pin
-					tempConnectionLine.posCords.pop()
+					if (!isMouseOnChip(e, pin.parent)) tempConnectionLine.posCords.pop()
 					tempConnectionLine.posCords.reverse()
 					let connection = new ConnectionLine(tempConnectionLine.from, tempConnectionLine.to, tempConnectionLine.posCords)
 					currentChip.connections.push(connection)
@@ -274,13 +320,12 @@ class Chip {
 	draw() {
 		let r = this.r
 		let h = this.height
-		let iPL = this.inputPins.length
-		let oPL = this.outputPins.length
 		let fontSize = 20 * zoom
 		ctx.font = `${fontSize}px "Cousine`
 		let textWidth = ctx.measureText(this.name).width
 		let width = textWidth + 2 * 15 * zoom
 		this.width = width / zoom
+		let screenPos = simToScreen(this.x, this.y)
 
 		this.inputPins.forEach(pin => pin.draw())
 		this.outputPins.forEach(pin => pin.draw())
@@ -300,8 +345,8 @@ class Chip {
 
 		ctx.beginPath()
 		ctx.rect(
-			this.x * zoom + offset.x - width / 2,
-			this.y * zoom + offset.y - h * zoom / 2,
+			screenPos.x - width / 2,
+			screenPos.y - h * zoom / 2,
 			width,
 			h * zoom
 		)
@@ -313,8 +358,8 @@ class Chip {
 		ctx.fillStyle = chooseForeground(this.color)
 		ctx.fillText(
 			this.name,
-			this.x * zoom + offset.x - textWidth / 2,
-			this.y * zoom + offset.y + fontSize / 3,
+			screenPos.x - textWidth / 2,
+			screenPos.y + fontSize / 3,
 		)
 		ctx.fill()
 		ctx.closePath()
@@ -334,6 +379,7 @@ class Chip {
 		ctx.font = `${fontSize}px "Cousine`
 		let textWidth = ctx.measureText(this.name).width
 		let width = textWidth + 2 * 15 * zoom
+		let screenPos = simToScreen(this.x, this.y)
 
 		ctx.beginPath()
 		let ogcolor = hexToRgb(this.color)
@@ -342,26 +388,26 @@ class Chip {
 		let endColor = combineRGBA(...ogcolor, ...dimmcolor)
 		ctx.fillStyle = `rgba(${endColor[0]}, ${endColor[1]}, ${endColor[2]}, ${endColor[3]})`
 		ctx.rect(
-			this.x * zoom + offset.x - width / 2,
-			this.y * zoom + offset.y - h * zoom / 2,
+			screenPos.x - width / 2,
+			screenPos.y - h * zoom / 2,
 			width,
 			2 * zoom
 		)
 		ctx.rect(
-			this.x * zoom + offset.x - width / 2,
-			this.y * zoom + offset.y + h * zoom / 2 - 2 * zoom,
+			screenPos.x - width / 2,
+			screenPos.y + h * zoom / 2 - 2 * zoom,
 			width,
 			2 * zoom
 		)
 		ctx.rect(
-			this.x * zoom + offset.x - width / 2,
-			this.y * zoom + offset.y - h * zoom / 2,
+			screenPos.x - width / 2,
+			screenPos.y - h * zoom / 2,
 			2 * zoom,
 			h * zoom - 2 * zoom
 		)
 		ctx.rect(
-			this.x * zoom + offset.x + width / 2 - 2 * zoom,
-			this.y * zoom + offset.y - h * zoom / 2,
+			screenPos.x + width / 2 - 2 * zoom,
+			screenPos.y - h * zoom / 2,
 			2 * zoom,
 			h * zoom - 2 * zoom
 		)
@@ -853,6 +899,10 @@ function isMouseOnChip(e, chip) {
 			e.pageY - offset.y < (chip.y + chip.height / 2) * zoom)
 }
 
+function isMouseOnAnyChip(e) {
+	return currentChip.subChips.some(chip => isMouseOnChip(e, chip))
+}
+
 window.addEventListener("mousedown", e => {
 	e.preventDefault()
 	if (e.button == 1) {
@@ -863,8 +913,13 @@ window.addEventListener("mousedown", e => {
 		panOffset.y = offset.y
 		return
 	}
-
+	
 	if (e.button == 2) {
+		if (tempConnectionLine != null) {
+			if (tempConnectionLine.posCords.length == 0) return tempConnectionLine = null
+			return tempConnectionLine.posCords.pop()
+		}
+
 		currentChip.subChips.forEach((chip, index) => {
 			if (isMouseOnChip(e, chip)) {
 				document.getElementById("chipMenu").style.display = "block"
@@ -876,22 +931,23 @@ window.addEventListener("mousedown", e => {
 			}
 			return false
 		})
-		return
 	}
 
 	if (e.button == 0) {
+		let simPos = screenToSim(e.pageX, e.pageY)
 		if (tempConnectionLine != null) {
+			if (isMouseOnAnyChip(e)) return
 			tempConnectionLine.posCords.push({
-				x: (e.pageX - offset.x) / zoom,
-				y: (e.pageY - offset.y) / zoom
+				x: simPos.x,
+				y: simPos.y
 			})
 			return
 		}
 
 		currentChip.subChips.some(chip => {
 			if (isMouseOnChip(e, chip) && !chip.move) {
-				diffMouseChipPos.x = chip.x - (e.pageX - offset.x) / zoom
-				diffMouseChipPos.y = chip.y - (e.pageY - offset.y) / zoom
+				diffMouseChipPos.x = chip.x - simPos.x
+				diffMouseChipPos.y = chip.y - simPos.y
 				chip.lastPos.x = chip.x
 				chip.lastPos.y = chip.y
 				chip.move = true
@@ -912,10 +968,11 @@ window.addEventListener("mousemove", e => {
 		return
 	}
 
+	let simPos = screenToSim(e.pageX, e.pageY)
 	currentChip.subChips.some(chip => {
 		if (chip.move) {
-			chip.x = (e.pageX - offset.x) / zoom + diffMouseChipPos.x
-			chip.y = (e.pageY - offset.y) / zoom + diffMouseChipPos.y
+			chip.x = simPos.x + diffMouseChipPos.x
+			chip.y = simPos.y + diffMouseChipPos.y
 			return true
 		}
 		return false

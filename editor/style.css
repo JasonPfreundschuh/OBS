@@ -90,10 +90,6 @@ nav {
     background-color: transparent;
 }
 
-.pinShadow:hover {
-    background-color: white;
-}
-
 @font-face {
     font-family: "Cousine";
     src: url(../images/Cousine-Bold.ttf);
