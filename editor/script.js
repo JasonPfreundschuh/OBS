@@ -225,6 +225,8 @@ class Chip {
 						ctx.beginPath()
 						ctx.lineWidth = 5 * zoom
 						ctx.strokeStyle = start.state ? start.color : "black"
+						ctx.lineCap = "round"
+						ctx.lineJoin = 'round'
 						ctx.moveTo(startX, startY)
 
 						for (let i = 0; i < tempConnectionLine.posCords.length; i++) {
@@ -291,6 +293,8 @@ class Chip {
 						ctx.beginPath()
 						ctx.lineWidth = 5 * zoom
 						ctx.strokeStyle = start.state ? start.color : "black"
+						ctx.lineCap = "round"
+						ctx.lineJoin = 'round'
 						ctx.moveTo(startX, startY)
 
 						for (let i = 0; i < tempConnectionLine.posCords.length; i++) {
@@ -454,6 +458,8 @@ class ConnectionLine {
 		ctx.beginPath()
 		ctx.lineWidth = 5 * zoom
 		ctx.strokeStyle = start.state ? start.color : endColor
+		ctx.lineCap = "round"
+		ctx.lineJoin = 'round'
 		ctx.moveTo(start.x, start.y)
 
 		for (let i = 0; i < this.posCords.length; i++) {
