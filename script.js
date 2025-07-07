@@ -16,7 +16,6 @@ var characterColor = 0
 var standardChips = [
 	{
 		name: "AND",
-		usesCode: true,
 		inputPins: [{
 			id: 0,
 			name: "In 0",
@@ -35,7 +34,6 @@ var standardChips = [
 	},
 	{
 		name: "NOT",
-		usesCode: true,
 		inputPins: [{
 			id: 0,
 			name: "In",
@@ -50,7 +48,6 @@ var standardChips = [
 	},
 	{
 		name: "CLOCK",
-		usesCode: true,
 		inputPins: [],
 		outputPins: [
 			{

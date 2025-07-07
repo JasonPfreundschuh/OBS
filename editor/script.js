@@ -118,7 +118,6 @@ class Chip {
 	/**
 	 * Creates a new chip with the given properties.
 	 * @param {String} name - The name of the chip.
-	 * @param {Boolean} usesCode - Whether the chip uses code.
 	 * @param {String} code - The code for the chip.
 	 * @param {Pin[]} inputPins - The input pins for the chip.
 	 * @param {Pin[]} outputPins - The output pins for the chip.
@@ -129,9 +128,8 @@ class Chip {
 	 * @param {Number} width - The width of the chip.
 	 * @param {Number} height - The height of the chip.
 	 */
-	constructor(name, usesCode, code, inputPins, outputPins, id, color, x, y, width, height) {
+	constructor(name, code, inputPins, outputPins, id, color, x, y, width, height) {
 		this.name = name
-		this.usesCode = usesCode
 		this.tempInputPins = inputPins
 		this.tempOutputPins = outputPins
 		this.inputPins = []
@@ -493,7 +491,7 @@ var gridStateChange = false
 var currentProject = JSON.parse(localStorage.projects)[Number(window.location.search.split("=")[1])]
 convertChipCodesToFuncs(currentProject)
 var currentChip = {
-	usesCode: false,
+	code: null,
 	subChips: [],
 	connections: [],
 	inputPins: [{
@@ -591,7 +589,7 @@ function chooseForeground(bkg) {
  */
 function convertChipCodesToFuncs(project) {
 	project.chips.forEach(chip => {
-		if (!chip.usesCode) return
+		if (chip.code == null) return
 		chip.code = new Function(chip.code)
 	})
 }
@@ -612,7 +610,6 @@ function addChip(name, x, y) {
 	let chip = currentProject.chips.find(chip => chip.name == name)
 		currentChip.subChips.push(new Chip(
 		chip.name,
-		chip.usesCode,
 		chip.code,
 		chip.inputPins,
 		chip.outputPins,
@@ -788,7 +785,7 @@ function simulateChipHybrid(chip) {
 	const sorted = topoSort(filteredGraph)
 	
 	for (const sub of sorted) {
-		if (sub.usesCode) sub.code()
+		if (sub.code != null) sub.code()
 		else simulateChipHybrid(sub)
 
 		// Right after: set connections
@@ -801,7 +798,7 @@ function simulateChipHybrid(chip) {
 
 	// Normal chip simulation for chips in cycles
 	for (const sub of cycleChips) {
-		if (sub.usesCode) sub.code()
+		if (sub.code != null) sub.code()
 		else simulateChipHybrid(sub)
 	}
 }
