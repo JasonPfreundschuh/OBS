@@ -149,6 +149,7 @@ class Chip {
 		this.r = 7
 		this.inputPinShadows = []
 		this.outputPinShadows = []
+		this.borderColor = "rgba(255, 255, 255, 0.2)"
 		this.createPins()
 		this.createShadowPins()
 	}
@@ -367,6 +368,7 @@ class Chip {
 		ctx.closePath()
 
 		this.drawShadow()
+		this.drawBorder()
 	}
 
 	/**
@@ -412,6 +414,24 @@ class Chip {
 			screenPos.y - h * zoom / 2,
 			2 * zoom,
 			h * zoom - 2 * zoom
+		)
+		ctx.fill()
+		ctx.closePath()
+	}
+
+	drawBorder() {
+		if (!this.move) return
+		let h = (this.height + this.r * 2) * zoom
+		let w = (this.width + this.r * 3) * zoom
+		let screenPos = simToScreen(this.x, this.y)
+
+		ctx.beginPath()
+		ctx.fillStyle = this.borderColor
+		ctx.rect(
+			screenPos.x - w / 2,
+			screenPos.y - h / 2,
+			w,
+			h
 		)
 		ctx.fill()
 		ctx.closePath()
@@ -749,7 +769,11 @@ function simulateCurrentChip() {
 	currentChip.connections.forEach(connection => connection.draw())
 	if (tempConnectionLine != null) tempConnectionLine.draw()
 
-	currentChip.subChips.forEach(chip => chip.draw())
+	currentChip.subChips.forEach(chip => {
+		if (chip.move && isChipOnAnyChip(chip)) chip.borderColor = "rgba(255, 0, 0, 0.3)"
+		else chip.borderColor = "rgba(255, 255, 255, 0.2)"
+		chip.draw()
+	})
 }
 
 /**
@@ -1005,7 +1029,7 @@ window.addEventListener("mouseup", e => {
 			chip.x = chip.lastPos.x
 			chip.y = chip.lastPos.y
 		}
-		chip.move = false
+		return chip.move = false
 	})
 })
 
