@@ -902,6 +902,17 @@ function isMouseOnChip(e, chip) {
 			e.pageY - offset.y < (chip.y + chip.height / 2) * zoom)
 }
 
+function isChipOnChip(chip1, chip2) {
+	return (chip1.x - chip1.width / 2) * zoom < (chip2.x + chip2.width / 2) * zoom &&
+			(chip1.x + chip1.width / 2) * zoom > (chip2.x - chip2.width / 2) * zoom &&
+			(chip1.y - chip1.height / 2) * zoom < (chip2.y + chip2.height / 2) * zoom &&
+			(chip1.y + chip1.height / 2) * zoom > (chip2.y - chip2.height / 2) * zoom
+}
+
+function isChipOnAnyChip(chip) {
+	return currentChip.subChips.some(chip2 => chip2 != chip ? isChipOnChip(chip, chip2) : false)
+}
+
 function isMouseOnAnyChip(e) {
 	return currentChip.subChips.some(chip => isMouseOnChip(e, chip))
 }
@@ -989,7 +1000,13 @@ window.addEventListener("mouseup", e => {
 		return
 	}
 
-	currentChip.subChips.forEach(chip => chip.move = false)
+	currentChip.subChips.forEach(chip => {
+		if (chip.move && isChipOnAnyChip(chip)) {
+			chip.x = chip.lastPos.x
+			chip.y = chip.lastPos.y
+		}
+		chip.move = false
+	})
 })
 
 window.addEventListener("mousewheel", e => {
