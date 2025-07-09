@@ -419,6 +419,12 @@ class Chip {
 		ctx.closePath()
 	}
 
+	/**
+	 * Draws a border around the chip, only if the chip is currently being moved.
+	 * The border is a filled rectangle with the chip's border color and is
+	 * slightly larger than the chip itself.
+	 * @method drawBorder
+	 */
 	drawBorder() {
 		if (!this.move) return
 		let h = (this.height + this.r * 2) * zoom
@@ -926,6 +932,21 @@ function isMouseOnChip(e, chip) {
 			e.pageY - offset.y < (chip.y + chip.height / 2) * zoom)
 }
 
+/**
+ * Checks if the mouse is currently on any chip in the currentChip's subChips array.
+ * @param {MouseEvent} e - The event to check.
+ * @returns {Boolean} - Whether the mouse is on any chip.
+ */
+function isMouseOnAnyChip(e) {
+	return currentChip.subChips.some(chip => isMouseOnChip(e, chip))
+}
+
+/**
+ * Checks if one chip is on top of another.
+ * @param {Chip} chip1 - The first chip.
+ * @param {Chip} chip2 - The second chip.
+ * @returns {Boolean} - Whether chip1 is on top of chip2.
+ */
 function isChipOnChip(chip1, chip2) {
 	return (chip1.x - chip1.width / 2) * zoom < (chip2.x + chip2.width / 2) * zoom &&
 			(chip1.x + chip1.width / 2) * zoom > (chip2.x - chip2.width / 2) * zoom &&
@@ -933,12 +954,13 @@ function isChipOnChip(chip1, chip2) {
 			(chip1.y + chip1.height / 2) * zoom > (chip2.y - chip2.height / 2) * zoom
 }
 
+/**
+ * Checks if one chip is on top of any chip in the currentChip's subChips array.
+ * @param {Chip} chip - The chip to check.
+ * @returns {Boolean} - Whether the chip is on top of any chip.
+ */
 function isChipOnAnyChip(chip) {
 	return currentChip.subChips.some(chip2 => chip2 != chip ? isChipOnChip(chip, chip2) : false)
-}
-
-function isMouseOnAnyChip(e) {
-	return currentChip.subChips.some(chip => isMouseOnChip(e, chip))
 }
 
 window.addEventListener("mousedown", e => {
