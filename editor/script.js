@@ -140,8 +140,8 @@ class Chip {
 		this.x = x
 		this.y = y
 		this.lastPos = {
-			x: this.x,
-			y: this.y
+			x: null,
+			y: null
 		}
 		this.width = 50
 		this.height = 50
@@ -1013,7 +1013,7 @@ window.addEventListener("mousedown", e => {
 				chip.move = true
 				return true
 			}
-			chip.move = false
+			if (!isChipOnAnyChip(chip)) chip.move = false
 			return false
 		})
 	}
@@ -1047,11 +1047,11 @@ window.addEventListener("mouseup", e => {
 	}
 
 	currentChip.subChips.forEach(chip => {
-		if (chip.move && isChipOnAnyChip(chip)) {
+		if (chip.move && isChipOnAnyChip(chip) && (chip.lastPos.x != undefined || chip.lastPos.y != undefined)) {
 			chip.x = chip.lastPos.x
 			chip.y = chip.lastPos.y
 		}
-		return chip.move = false
+		if (!isChipOnAnyChip(chip)) chip.move = false
 	})
 })
 
