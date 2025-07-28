@@ -68,21 +68,25 @@ class Chip {
 	 * @param {Pin[]} inputPins - The input pins for the chip.
 	 * @param {Pin[]} outputPins - The output pins for the chip.
 	 * @param {Number} id - The ID of the chip.
-	 * @param {String} color - The color of the chip.
+	 * @param {String} color - The color of the chip (default is white).
+	 * @param {Number} radius - The radius of the chip (default is 7).
+	 * @param {Number} innerRadius - The inner radius of the chip (default is 21).
 	 * @param {Number} x - The x position of the chip.
 	 * @param {Number} y - The y position of the chip.
 	 * @param {Number} width - The width of the chip.
 	 * @param {Number} height - The height of the chip.
 	 */
-	constructor(name, code, inputPins, outputPins, id, color, x, y, width, height) {
+	constructor(name, code, inputPins, outputPins, inputPinContainer, outputPinContainer, id, color, radius, innerRadius, x, y, width, height) {
 		this.name = name
-		this.tempInputPins = inputPins
-		this.tempOutputPins = outputPins
-		this.inputPins = []
-		this.outputPins = []
+		this.inputPins = inputPins
+		this.outputPins = outputPins
+		this.inputPinContainer = inputPinContainer || []
+		this.outputPinContainer = outputPinContainer || []
 		this.code = code
 		this.id = id
-		this.color = color
+		this.color = color || "#ffffff"
+		this.radius = radius || 7
+		this.innerRadius = innerRadius || 21
 		this.x = x
 		this.y = y
 		this.lastPos = {
@@ -97,29 +101,30 @@ class Chip {
 	}
 
 	/**
-	 * Creates input and output pin objects from the tempInputPins and tempOutputPins
-	 * properties and assigns them to the inputPins and outputPins properties
-	 * respectively.
+	 * Creates a new array of Pin objects for the chip's input and output pins.
 	 */
 	createPins() {
-		this.tempInputPins.forEach((pin, index) => {
-			let newPin = new Pin(pin.name, index, "in", pin.color, 7, false, false, this)
-			this.inputPins.push(newPin)
+		let state = false
+		let set = false
+		let isMainChipPin = false
+
+		this.inputPins.forEach((pin, index) => {
+			let newPin = new Pin(pin.name, index, "in", pin.color, pin.radius, state, set, this, isMainChipPin)
+			this.inputPins[index] = newPin
 		})
 
-		this.tempOutputPins.forEach((pin, index) => {
-			let newPin = new Pin(pin.name, index, "out", pin.color, 7, false, false, this)
-			this.outputPins.push(newPin)
+		this.outputPins.forEach((pin, index) => {
+			let newPin = new Pin(pin.name, index, "out", pin.color, pin.radius, state, set, this, isMainChipPin)
+			this.outputPins[index] = newPin
 		})
 	}
 
 	/**
-	 * Draws the chip on the canvas, including its pins and their shadows.
-	 * Also draws the chip's name on the canvas.
-	 * @method draw
+	 * Renders the chip on the canvas by drawing its background, border, shadow, and name.
+	 * The chip's dimensions and position are determined by its properties.
+	 * The chip's pins are also drawn around its perimeter.
 	 */
 	draw() {
-		let r = this.r
 		let h = this.height
 		let fontSize = 20 * zoom
 		ctx.font = `${fontSize}px "Cousine`
@@ -127,39 +132,8 @@ class Chip {
 		let width = textWidth + 2 * 15 * zoom
 		this.width = width / zoom
 		let screenPos = simToScreen(this.x, this.y)
-
-		this.inputPins.forEach(pin => {
-			let r = pin.radius
-			let h = this.height
-			let PL = this.inputPins.length
-			let x = this.x * zoom + offset.x - this.width / 2 * zoom
-			let y =
-				this.y * zoom +
-				offset.y -
-				(h * zoom) / 2 +
-				(r +
-					(h - PL * 2 * r) / PL / 2 +
-					(2 * r + (h - PL * 2 * r) / PL) * pin.id) *
-					zoom
-
-			pin.draw(x, y)
-		})
-		this.outputPins.forEach(pin => {
-			let r = pin.radius
-			let h = this.height
-			let PL = this.outputPins.length
-			let x = this.x * zoom + offset.x + this.width / 2 * zoom
-			let y =
-				this.y * zoom +
-				offset.y -
-				(h * zoom) / 2 +
-				(r +
-					(h - PL * 2 * r) / PL / 2 +
-					(2 * r + (h - PL * 2 * r) / PL) * pin.id) *
-					zoom
-
-			pin.draw(x, y)
-		})
+		
+		this.drawPins()
 
 		ctx.beginPath()
 		ctx.rect(
@@ -171,7 +145,7 @@ class Chip {
 		ctx.fillStyle = this.color
 		ctx.fill()
 		ctx.closePath()
-		
+
 		ctx.beginPath()
 		ctx.fillStyle = chooseForeground(this.color)
 		ctx.fillText(
@@ -184,6 +158,55 @@ class Chip {
 
 		this.drawChipShadow()
 		this.drawBorder()
+	}
+
+	/**
+	 * Draws the input and output pins of the chip at their positions determined by
+	 * the chip's dimensions and the pin's properties.
+	 * The pins are drawn as circles with their respective colors and radii, and their
+	 * positions are calculated based on the chip's width and height.
+	 */
+	drawPins() {
+		let h = this.height
+		let screenCords = simToScreen(this.x, this.y)
+		let chipOffsetX = this.width / 2 * zoom
+		let chipOffsetY = h / 2 * zoom
+		let inp = this.inputPins
+		let out = this.outputPins
+		let radii = {
+			in: inp.map(pin => pin.radius),
+			out: out.map(pin => pin.radius)
+		}
+		let pinSpacing = {
+			in: (h - inp.reduce((sum, pin) => sum + pin.radius, 0) * 2) / (inp.length * 2),
+			out: (h - out.reduce((sum, pin) => sum + pin.radius, 0) * 2) / (out.length * 2),
+		}
+
+		inp.forEach(pin => {
+			let x = screenCords.x - chipOffsetX
+			let pinY = pin.radius + pinSpacing.in
+
+			for (let i = 0; i < pin.id; i++) {
+				pinY += (radii.in[i] + pinSpacing.in) * 2
+			}
+
+			let y = screenCords.y - chipOffsetY + pinY * zoom
+
+			pin.draw(x, y)
+		})
+
+		out.forEach(pin => {
+			let x = screenCords.x + chipOffsetX
+			let pinY = pin.radius + pinSpacing.out
+
+			for (let i = 0; i < pin.id; i++) {
+				pinY += (radii.out[i] + pinSpacing.out) * 2
+			}
+
+			let y = screenCords.y - chipOffsetY + pinY * zoom
+
+			pin.draw(x, y)
+		})
 	}
 
 	/**
@@ -271,23 +294,25 @@ class Pin {
 	 * @param {Boolean} set - Whether the pin has been set (true or false).
 	 * @param {Chip} parent - The parent chip of the pin.
 	 */
-	constructor(name, id, type, color, radius = 7, state, set, parent) {
-		this.name = name
+	constructor(name, id, type, color, radius, state, set, parent, isMainChipPin) {
+		this.name = name || "Pin"
 		this.id = id
 		this.type = type
-		this.color = color
-		this.radius = radius
-		this.state = state
-		this.set = set
+		this.color = color || "#ffffff"
+		this.radius = radius || 7
+		this.state = state || false
+		this.set = set || false
 		this.parent = parent
+		this.isMainChipPin = isMainChipPin || false
 	}
 
 	/**
-	 * Draws the pin on the canvas, at the position determined by the parent chip.
-	 * The pin is drawn as a black circle with a radius of 7 pixels (scaled by zoom).
-	 * The x and y coordinates of the pin are calculated based on the position of the parent chip.
-	 * @param {Chip} parent - The parent chip of the pin.
-	 * @method draw
+	 * Draws the pin on the canvas at the specified coordinates.
+	 * The pin is drawn as a circle with a black fill and a radius
+	 * scaled by the zoom factor. It also draws the shadow of the pin
+	 * after drawing the pin itself. 
+	 * @param {Number} x - The x-coordinate where the pin should be drawn.
+	 * @param {Number} y - The y-coordinate where the pin should be drawn.
 	 */
 	draw(x, y) {
 		this.x = x
@@ -298,32 +323,89 @@ class Pin {
 		ctx.fill()
 		ctx.closePath()
 
-		this.updateShadowPin()
+		this.drawShadowPin()
 	}
 
+	/**
+	 * Updates the properties of the pin with the given options object.
+	 * If any of the properties in the options object are undefined,
+	 * the property will not be updated.
+	 * If the pin has a shadow pin, it will be updated with the options
+	 * object as well.
+	 * The pin will also be redrawn with the draw() method after being updated.
+	 * @param {Object} options - An object containing the properties to update.
+	 */
+	update(options) {
+		this.name = options?.name
+		this.id = options?.id
+		this.type = options?.type
+		this.color = options?.color
+		this.radius = options?.radius
+		this.x = options?.x
+		this.y = options?.y
+		this.state = options?.state
+		this.set = options?.set
+		this.parent = options?.parent
+		if (this.shadowPin) this.shadowPin.update(options)
+
+		this.draw(this.x, this.y)
+		this.drawShadowPin()
+	}
+
+	/**
+	 * Creates a new shadow pin with the same properties as this pin.
+	 * The shadow pin is an invisible pin that is drawn on top of the pin,
+	 * allowing the pin to be connected to other pins when clicked.
+	 * The shadow pin is necessary because the pin is drawn on the canvas
+	 * and cannot be clicked directly.
+	 */
 	createShadowPin() {
-		let shadow = new Shadow_Pin(this.name, this.id, this.type, this.color, this.radius, this.parent, this)
+		let shadow = new Shadow_Pin(this.name, this.id, this.type, this.color, this.radius, this.parent, this, this.isMainChipPin)
 		shadow.create()
 		this.shadowPin = shadow
 	}
 
-	updateShadowPin() {
+	/**
+	 * Ensures that the shadow pin is created and draws it at the specified coordinates.
+	 * If the shadow pin does not exist, it will be created before being drawn.
+	 * The shadow pin is drawn at the same coordinates as the pin itself.
+	 */
+	drawShadowPin() {
 		if (!this.shadowPin) this.createShadowPin()
-		this.shadowPin.update(this.x, this.y)
+		this.shadowPin.draw(this.x, this.y)
 	}
 }
 
 class Shadow_Pin {
-	constructor(name, id, type, color, radius = 7, parent, parentPin) {
-		this.name = name
+	/**
+	 * Constructs a new Shadow_Pin object with the specified properties.
+	 * @param {String} name - The name of the shadow pin.
+	 * @param {Number} id - The ID of the shadow pin.
+	 * @param {String} type - The type of the shadow pin (in or out).
+	 * @param {String} color - The color of the shadow pin.
+	 * @param {Number} radius - The radius of the shadow pin (default is 7).
+	 * @param {Chip} parent - The parent chip of the shadow pin.
+	 * @param {Pin} parentPin - The parent pin associated with the shadow pin.
+	 */
+	constructor(name, id, type, color, radius, parent, parentPin, isMainChipPin) {
+		this.name = name || "Pin"
 		this.id = id
 		this.type = type
-		this.color = color
-		this.radius = radius
+		this.color = color || "#ffffff"
+		this.radius = radius || 7
 		this.parent = parent
 		this.parentPin = parentPin
+		this.isChipOnAnyChipPin = isMainChipPin || false
+		this.secretType = isMainChipPin ? this.type == "in" ? "out" : "in" : this.type
 	}
 
+	/**
+	 * Creates a new HTML element representing the shadow pin and attaches event listeners.
+	 * The element responds to mouse events, allowing for interaction with connection lines.
+	 * When clicked, the shadow pin can initiate or complete a connection line based on the
+	 * pin type (in or out). The connection line's properties and position are updated
+	 * accordingly, and the element is appended to the document body.
+	 */
 	create() {
 		let element = document.createElement("div")
 		element.classList.add("pinShadow")
@@ -331,7 +413,7 @@ class Shadow_Pin {
 
 		element.onmouseover = () => {
 			element.style.cursor = "pointer"
-			element.style.backgroundColor = (this.type == "in" ? tempConnectionLine?.to != null : tempConnectionLine?.from != null) ? "gray" : "white"
+			element.style.backgroundColor = (this.secretType == "in" ? tempConnectionLine?.to != null : tempConnectionLine?.from != null) ? "gray" : "white"
 		}
 
 		element.onmouseleave = () => {
@@ -342,9 +424,9 @@ class Shadow_Pin {
 		element.addEventListener("click", e => {
 			if (tempConnectionLine != null) {
 				if (!isMouseOnAnyChip(e)) tempConnectionLine.posCords.pop()
-				if (this.type == "in" ? tempConnectionLine.to != null : tempConnectionLine.from != null) return
-				this.type == "in" ? tempConnectionLine.to = this.parentPin : tempConnectionLine.from = this.parentPin
-				if (this.type == "out") tempConnectionLine.posCords.reverse()
+				if (this.secretType == "in" ? tempConnectionLine.to != null : tempConnectionLine.from != null) return
+				this.secretType == "in" ? tempConnectionLine.to = this.parentPin : tempConnectionLine.from = this.parentPin
+				if (this.secretType == "out") tempConnectionLine.posCords.reverse()
 				let connection = new ConnectionLine(tempConnectionLine.from, tempConnectionLine.to, tempConnectionLine.posCords)
 				currentChip.connections.push(connection)
 				tempConnectionLine = null
@@ -352,8 +434,8 @@ class Shadow_Pin {
 			}
 
 			tempConnectionLine = {
-				from: this.type == "out" ? this.parentPin : null,
-				to: this.type == "in" ? this.parentPin : null,
+				from: this.secretType == "out" ? this.parentPin : null,
+				to: this.secretType == "in" ? this.parentPin : null,
 				posCords: [],
 				coursor: {
 					x: this.parentPin.x,
@@ -362,16 +444,16 @@ class Shadow_Pin {
 				draw: () => {
 					if (!tempConnectionLine.from && !tempConnectionLine.to) return
 
-					let start = this.type == "in" ? tempConnectionLine.to : tempConnectionLine.from
+					let start = this.secretType == "in" ? tempConnectionLine.to : tempConnectionLine.from
 
 					let startX = start.x
 					let startY = start.y
 
 					ctx.beginPath()
 					ctx.lineWidth = 5 * zoom
-					ctx.strokeStyle = start.state ? start.color : "black"
+					ctx.strokeStyle = this.secretType == "out" ? start.state ? start.color : "black" : "black"
 					ctx.lineCap = "round"
-					ctx.lineJoin = 'round'
+					ctx.lineJoin = "round"
 					ctx.moveTo(startX, startY)
 
 					for (let i = 0; i < tempConnectionLine.posCords.length; i++) {
@@ -392,7 +474,14 @@ class Shadow_Pin {
 		document.body.appendChild(this.element)
 	}
 
-	update(x, y) {
+	/**
+	 * Draws the shadow pin on the canvas at the specified coordinates.
+	 * If the HTML element for the shadow pin does not exist, it will be created.
+	 * The element is then positioned and styled based on the pin's properties.
+	 * @param {Number} x - The x position of the shadow pin.
+	 * @param {Number} y - The y position of the shadow pin.
+	 */
+	draw(x, y) {
 		this.x = x
 		this.y = y
 		if (!this.element) this.create()
@@ -401,6 +490,155 @@ class Shadow_Pin {
 		this.element.style.top = `${this.y - this.radius * zoom}px`
 		this.element.style.width = `${this.radius * 2 * zoom}px`
 		this.element.style.height = `${this.radius * 2 * zoom}px`
+	}
+
+	/**
+	 * Updates the properties of the shadow pin and redraws it on the canvas.
+	 * @param {Object} options - An object containing the properties to update.
+	 * @prop {String} [name] - The name of the shadow pin.
+	 * @prop {Number} [id] - The ID of the shadow pin.
+	 * @prop {String} [type] - The type of the shadow pin (in or out).
+	 * @prop {String} [color] - The color of the shadow pin.
+	 * @prop {Number} [radius] - The radius of the shadow pin.
+	 * @prop {Number} [x] - The x position of the shadow pin.
+	 * @prop {Number} [y] - The y position of the shadow pin.
+	 * @prop {Chip} [parent] - The parent chip of the shadow pin.
+	 */
+	update(options) {
+		this.name = options?.name
+		this.id = options?.id
+		this.type = options?.type
+		this.color = options?.color
+		this.radius = options?.radius
+		this.x = options?.x
+		this.y = options?.y
+		this.parent = options?.parent
+
+		this.draw(this.x, this.y)
+	}
+}
+
+class Current_Chip_Pin_Container {
+	/**
+	 * Creates a new pin container for the current chip.
+	 * @param {String} name - The name of the pin container.
+	 * @param {Number} id - The ID of the pin container.
+	 * @param {String} type - The type of the pin container (in or out).
+	 * @param {Number} x - The x position of the pin container.
+	 * @param {Number} y - The y position of the pin container.
+	 * @param {String} color - The color of the pin container.
+	 * @param {Number} radius - The radius of the pin container.
+	 * @param {Number} innerRadius - The inner radius of the pin container.
+	 * @param {Boolean} state - The state of the pin container.
+	 * @param {Boolean} set - Whether the pin container has been set.
+	 * @param {CurrentChip} parent - The parent chip of the pin container.
+	 */
+	constructor(name, id, type, x, y, color, radius, innerRadius, state, set, parent) {
+		this.name = name
+		this.id = id
+		this.type = type
+		this.x = x
+		this.y = y
+		this.color = color
+		this.state = state
+		this.set = set
+		this.parent = parent
+		this.radius = radius || 7
+		this.innerRadius = innerRadius || 21
+		this.neckHeight = radius * 0.8
+	}
+
+	/**
+	 * Creates a new pin from the pin container and adds it to the current chip's pins.
+	 * The pin is created with the same properties as the pin container.
+	 * The pin is then stored in the pin container's pin property for later use.
+	 */
+	createPin() {
+		currentChip[this.type == "in" ? "inputPins" : "outputPins"].push(new Pin(
+			this.name,
+			this.id,
+			this.type,
+			this.color,
+			this.radius,
+			this.state,
+			this.set,
+			this.parent,
+			true
+		))
+		this.pin = currentChip[this.type == "in" ? "inputPins" : "outputPins"][this.id]
+	}
+
+	/**
+	 * Draws the pin container on the canvas.
+	 */
+	draw() {
+		let screenPos = simToScreen(this.x, this.y)
+		let simPos = { x: this.x, y: this.y }
+		this.x = screenPos.x
+		this.y = screenPos.y
+
+		this.drawNeck()
+		this.drawFrame()
+		this.drawStateWindow()
+		this.drawPin()
+
+		this.x = simPos.x
+		this.y = simPos.y
+	}
+
+	/**
+	 * Draws the neck of the pin container on the canvas.
+	 * The neck is a vertical rectangle that connects the pin container to the pin.
+	 * The neck is drawn from the center of the pin container to the center of the pin 
+	 * and is filled with a black color.
+	 */
+	drawNeck() {
+		ctx.beginPath()
+		ctx.rect(
+			this.x,
+			this.y - this.neckHeight / 2 * zoom,
+			(this.type == "in" ? +1 : -1) * (this.innerRadius + this.radius * 3) * zoom,
+			this.neckHeight * zoom
+		)
+		ctx.fillStyle = "black"
+		ctx.fill()
+		ctx.closePath()
+	}
+
+	/**
+	 * Draws the frame of the pin container on the canvas.
+	 * The frame is a black filled circle that serves as a border around the state window.
+	 */
+	drawFrame() {
+		ctx.beginPath()
+		ctx.arc(this.x, this.y, this.innerRadius * zoom, 0, 2 * Math.PI)
+		ctx.fillStyle = "black"
+		ctx.fill()
+		ctx.closePath()
+	}
+
+	/**
+	 * Draws the state window on the canvas. The state window is a circle
+	 * centered at the pin's coordinates, with a radius scaled by the zoom factor.
+	 * The fill color of the circle indicates the state of the pin: if the state
+	 * is true, the pin's color is used; otherwise, gray is used.
+	 */
+	drawStateWindow() {
+		ctx.beginPath()
+		ctx.arc(this.x, this.y, (this.innerRadius * 0.85) * zoom, 0, 2 * Math.PI)
+		ctx.fillStyle = this.state ? this.color : "gray"
+		ctx.fill()
+		ctx.closePath()
+	}
+
+	/**
+	 * Draws the pin at the end of the neck, taking into account the direction
+	 * of the pin container (in or out) and the zoom level. If the pin has not been
+	 * created yet, it is created before being drawn.
+	 */
+	drawPin() {
+		if (!this.pin) this.createPin()
+		this.pin.draw(this.x + (this.type == "in" ? +1 : -1) * (this.innerRadius + this.radius * 3) * zoom, this.y)
 	}
 }
 
@@ -419,13 +657,12 @@ class ConnectionLine {
 	}
 
 	/**
-	 * Draws the connection line on the canvas, taking into account the
-	 * position of the start and end points, as well as any intermediate
-	 * points specified in the posCords array. The line is drawn with a
-	 * thickness of 5 pixels (scaled by zoom) and a color determined by
-	 * the state of the start point (if true, the start point's color is
-	 * used; otherwise, black is used). The line is drawn using the
-	 * 2D drawing context's lineTo() method.
+	 * Draws the connection line between the two pins on the canvas.
+	 * The connection line is drawn as a line with rounded ends and joins.
+	 * The color of the connection line is determined by the state of the starting pin.
+	 * If the starting pin is true, the connection line is drawn with the starting pin's color.
+	 * If the starting pin is false, the connection line is drawn with a dimmed version of the starting pin's color.
+	 * The connection line is also drawn with a gray color if the ending pin is null.
 	 */
 	draw() {
 		if (!this.from || !this.to) return
@@ -482,6 +719,8 @@ var currentChip = {
 	connections: [],
 	inputPins: [],
 	outputPins: [],
+	inputPinContainer: [],
+	outputPinContainer: [],
 	name: "Current Chip",
 	radius: 7,
 	innerRadius: 21
@@ -586,12 +825,16 @@ function addChip(name, x, y) {
 		chip.code,
 		chip.inputPins,
 		chip.outputPins,
+		chip.inputPinContainer,
+		chip.outputPinContainer,
 		currentChip.subChips.length == 0 ? 0 : currentChip.subChips,
 		chip.color,
+		chip.radius,
+		chip.innerRadius,
 		x,
 		y,
-		chip.width != undefined ? chip.width : 50,
-		chip.height != undefined ? chip.height : 50
+		chip.width,
+		chip.height
 	))
 }
 
@@ -617,6 +860,31 @@ function addChipsToStarredList() {
 		}
 		document.getElementById("starredChipsList").appendChild(chip)
 	})
+}
+
+/**
+ * Adds an input or output pin to the current chip at the specified position.
+ * @param {String} type - The type of pin to add, either "in" or "out".
+ * @param {Number} x - The x-coordinate for the position of the new pin.
+ * @param {Number} y - The y-coordinate for the position of the new pin.
+ */
+function addPinsToCurrentChip(type, x, y) {
+	let pinArray = type == "in" ? currentChip.inputPinContainer : currentChip.outputPinContainer
+	pinArray.push(
+		new Current_Chip_Pin_Container(
+			type, 
+			pinArray.length,
+			type,
+			x,
+			y,
+			"#ff0000",
+			currentChip.radius,
+			currentChip.innerRadius,
+			false,
+			false,
+			currentChip
+		)
+	)
 }
 
 /**
@@ -703,6 +971,16 @@ function drawGrid() {
 }
 
 /**
+ * Draws the input and output pins of the current chip on the canvas.
+ * Each pin is rendered based on its position and state within the
+ * current chip's configuration.
+ */
+function drawCurrentChipPins() {
+	currentChip.inputPinContainer.forEach(pin => pin.draw())
+	currentChip.outputPinContainer.forEach(pin => pin.draw())
+}
+
+/**
  * This function is called every frame to simulate the current chip. It clears
  * the canvas, draws the grid if it is enabled, and then simulates the current
  * chip, drawing each of its subChips afterward. It also increments the
@@ -721,6 +999,7 @@ function simulateCurrentChip() {
 	drawGrid()
 	currentChip.connections.forEach(connection => connection.draw())
 	if (tempConnectionLine != null) tempConnectionLine.draw()
+	drawCurrentChipPins()
 
 	currentChip.subChips.forEach(chip => {
 		if (chip.move && isChipOnAnyChip(chip)) chip.borderColor = "rgba(255, 0, 0, 0.3)"
@@ -794,9 +1073,10 @@ function buildDependencyGraph(chip) {
 	chip.connections.forEach(conn => {
 		const source = conn.from.parent
 		const target = conn.to.parent
-		if (source !== target) {
-			graph.get(target).add(source)
-		}
+
+		if (!graph.has(source) || !graph.has(target)) return
+
+		graph.get(target).add(source)
 	})
 
 	return graph
