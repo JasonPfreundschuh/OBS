@@ -60,60 +60,6 @@ const Simulation = {
 	}
 }
 
-class Pin {
-	/**
-	 * Creates a new pin with the given properties.
-	 * @param {String} name - The name of the pin.
-	 * @param {Number} id - The ID of the pin.
-	 * @param {String} type - The type of the pin (in or out).
-	 * @param {String} color - The color of the pin.
-	 * @param {Boolean} state - The state of the pin (true or false).
-	 * @param {Boolean} set - Whether the pin is settable (true or false).
-	 */
-	constructor(name, id, type, color, state, set, parent) {
-		this.name = name
-		this.id = id
-		this.type = type
-		this.color = color
-		this.state = state
-		this.set = set
-		this.parent = parent
-	}
-
-	/**
-	 * Draws the pin on the canvas, at the position determined by the parent chip.
-	 * The pin is drawn as a black circle with a radius of 7 pixels (scaled by zoom).
-	 * The x and y coordinates of the pin are calculated based on the position of the parent chip.
-	 * @param {Chip} parent - The parent chip of the pin.
-	 * @method draw
-	 */
-	draw() {
-		let r = this.parent.r
-		let h = this.parent.height
-		let PL = this.type == "in" ? this.parent.inputPins.length : this.parent.outputPins.length
-		let fontSize = 20 * zoom
-		ctx.font = `${fontSize}px "Cousine"`
-		let textWidth = ctx.measureText(this.parent.name).width
-		let width = textWidth + 2 * 15 * zoom
-
-		this.x = this.type == "in" ? this.parent.x * zoom + offset.x - width / 2 : this.parent.x * zoom + offset.x + width / 2
-		this.y =
-			this.parent.y * zoom +
-			offset.y -
-			(h * zoom) / 2 +
-			(r +
-				(h - PL * 2 * r) / PL / 2 +
-				(2 * r + (h - PL * 2 * r) / PL) * this.id) *
-				zoom
-
-		ctx.beginPath()
-		ctx.fillStyle = "black"
-		ctx.arc(this.x, this.y, r * zoom, 0, 2 * Math.PI)
-		ctx.fill()
-		ctx.closePath()
-	}
-}
-
 class Chip {
 	/**
 	 * Creates a new chip with the given properties.
@@ -143,15 +89,11 @@ class Chip {
 			x: null,
 			y: null
 		}
-		this.width = 50
-		this.height = 50
+		this.width = width || 50
+		this.height = height || 50
 		this.move = false
-		this.r = 7
-		this.inputPinShadows = []
-		this.outputPinShadows = []
 		this.borderColor = "rgba(255, 255, 255, 0.2)"
 		this.createPins()
-		this.createShadowPins()
 	}
 
 	/**
@@ -161,157 +103,13 @@ class Chip {
 	 */
 	createPins() {
 		this.tempInputPins.forEach((pin, index) => {
-			let newPin = new Pin(pin.name, index, "in", pin.color, false, false, this)
+			let newPin = new Pin(pin.name, index, "in", pin.color, 7, false, false, this)
 			this.inputPins.push(newPin)
 		})
 
 		this.tempOutputPins.forEach((pin, index) => {
-			let newPin = new Pin(pin.name, index, "out", pin.color, false, false, this)
+			let newPin = new Pin(pin.name, index, "out", pin.color, 7, false, false, this)
 			this.outputPins.push(newPin)
-		})
-	}
-
-	/**
-	 * Creates shadow elements for each input and output pin, enabling interactive
-	 * visual feedback for connections on the canvas. Shadows respond to click events
-	 * to initiate or complete temporary connection lines, facilitating the drawing
-	 * of lines between pins. These shadows are also appended to the document body
-	 * for rendering.
-	 */
-	createShadowPins() {
-		this.inputPins.forEach(pin => {
-			let shadow = document.createElement("div")
-			shadow.classList.add("pinShadow")
-			shadow.onmouseover = () => {
-				shadow.style.cursor = "pointer"
-				shadow.style.backgroundColor = tempConnectionLine?.to != null ? "gray" : "white"
-			}
-
-			shadow.onmouseleave = () => {
-				shadow.style.cursor = "default"
-				shadow.style.backgroundColor = "transparent"
-			}
-
-			shadow.id = `inShadow-${this.id}-${pin.id}`
-
-			shadow.addEventListener("click", e => {
-				if (tempConnectionLine != null) {
-					if (tempConnectionLine.to != null) return tempConnectionLine.posCords.pop()
-					tempConnectionLine.to = pin
-					if (!isMouseOnChip(e, pin.parent)) tempConnectionLine.posCords.pop()
-					let connection = new ConnectionLine(tempConnectionLine.from, tempConnectionLine.to, tempConnectionLine.posCords)
-					currentChip.connections.push(connection)
-					tempConnectionLine = null
-					return
-				}
-
-				tempConnectionLine = {
-					from: null,
-					to: pin,
-					posCords: [],
-					coursor: {
-						x: pin.x,
-						y: pin.y
-					},
-					draw: () => {
-						if (!tempConnectionLine.from && !tempConnectionLine.to) return
-
-						let start = tempConnectionLine.to
-
-						let startX = start.x
-						let startY = start.y
-
-						ctx.beginPath()
-						ctx.lineWidth = 5 * zoom
-						ctx.strokeStyle = start.state ? start.color : "black"
-						ctx.lineCap = "round"
-						ctx.lineJoin = 'round'
-						ctx.moveTo(startX, startY)
-
-						for (let i = 0; i < tempConnectionLine.posCords.length; i++) {
-							const point = tempConnectionLine.posCords[i]
-							ctx.lineTo(point.x * zoom + offset.x, point.y * zoom + offset.y)
-						}
-
-						let end = tempConnectionLine.coursor
-						ctx.lineTo(end.x, end.y)
-
-						ctx.stroke()
-						ctx.closePath()
-					}
-				}
-			})
-
-			this.inputPinShadows.push(shadow)
-			document.body.appendChild(shadow)
-		})
-
-		this.outputPins.forEach(pin => {
-			let shadow = document.createElement("div")
-			shadow.classList.add("pinShadow")
-			shadow.onmouseover = () => {
-				shadow.style.cursor = "pointer"
-				shadow.style.backgroundColor = tempConnectionLine?.from != null ? "gray" : "white"
-			}
-
-			shadow.onmouseleave = () => {
-				shadow.style.cursor = "default"
-				shadow.style.backgroundColor = "transparent"
-			}
-
-			shadow.id = `outShadow-${this.id}-${pin.id}`
-
-			shadow.addEventListener("click", e => {
-				if (tempConnectionLine != null) {
-					if (tempConnectionLine.from != null) return tempConnectionLine.posCords.pop()
-					tempConnectionLine.from = pin
-					if (!isMouseOnChip(e, pin.parent)) tempConnectionLine.posCords.pop()
-					tempConnectionLine.posCords.reverse()
-					let connection = new ConnectionLine(tempConnectionLine.from, tempConnectionLine.to, tempConnectionLine.posCords)
-					currentChip.connections.push(connection)
-					tempConnectionLine = null
-					return
-				}
-
-				tempConnectionLine = {
-					from: pin,
-					to: null,
-					posCords: [],
-					coursor: {
-						x: pin.x,
-						y: pin.y
-					},
-					draw: () => {
-						if (!tempConnectionLine.from && !tempConnectionLine.to) return
-
-						let start = tempConnectionLine.from
-
-						let startX = start.x
-						let startY = start.y
-
-						ctx.beginPath()
-						ctx.lineWidth = 5 * zoom
-						ctx.strokeStyle = start.state ? start.color : "black"
-						ctx.lineCap = "round"
-						ctx.lineJoin = 'round'
-						ctx.moveTo(startX, startY)
-
-						for (let i = 0; i < tempConnectionLine.posCords.length; i++) {
-							const point = tempConnectionLine.posCords[i]
-							ctx.lineTo(point.x * zoom + offset.x, point.y * zoom + offset.y)
-						}
-
-						let end = tempConnectionLine.coursor
-						ctx.lineTo(end.x, end.y)
-
-						ctx.stroke()
-						ctx.closePath()
-					}
-				}
-			})
-
-			this.outputPinShadows.push(shadow)
-			document.body.appendChild(shadow)
 		})
 	}
 
@@ -330,20 +128,37 @@ class Chip {
 		this.width = width / zoom
 		let screenPos = simToScreen(this.x, this.y)
 
-		this.inputPins.forEach(pin => pin.draw())
-		this.outputPins.forEach(pin => pin.draw())
+		this.inputPins.forEach(pin => {
+			let r = pin.radius
+			let h = this.height
+			let PL = this.inputPins.length
+			let x = this.x * zoom + offset.x - this.width / 2 * zoom
+			let y =
+				this.y * zoom +
+				offset.y -
+				(h * zoom) / 2 +
+				(r +
+					(h - PL * 2 * r) / PL / 2 +
+					(2 * r + (h - PL * 2 * r) / PL) * pin.id) *
+					zoom
 
-		this.inputPinShadows.forEach((shadow, i) => {
-			shadow.style.left = `${this.inputPins[i].x - r * zoom}px`
-			shadow.style.top = `${this.inputPins[i].y - r * zoom}px`
-			shadow.style.width = `${r * 2 * zoom}px`
-			shadow.style.height = `${r * 2 * zoom}px`
+			pin.draw(x, y)
 		})
-		this.outputPinShadows.forEach((shadow, i) => {
-			shadow.style.left = `${this.outputPins[i].x - r * zoom}px`
-			shadow.style.top = `${this.outputPins[i].y - r * zoom}px`
-			shadow.style.width = `${r * 2 * zoom}px`
-			shadow.style.height = `${r * 2 * zoom}px`
+		this.outputPins.forEach(pin => {
+			let r = pin.radius
+			let h = this.height
+			let PL = this.outputPins.length
+			let x = this.x * zoom + offset.x + this.width / 2 * zoom
+			let y =
+				this.y * zoom +
+				offset.y -
+				(h * zoom) / 2 +
+				(r +
+					(h - PL * 2 * r) / PL / 2 +
+					(2 * r + (h - PL * 2 * r) / PL) * pin.id) *
+					zoom
+
+			pin.draw(x, y)
 		})
 
 		ctx.beginPath()
@@ -367,7 +182,7 @@ class Chip {
 		ctx.fill()
 		ctx.closePath()
 
-		this.drawShadow()
+		this.drawChipShadow()
 		this.drawBorder()
 	}
 
@@ -375,9 +190,9 @@ class Chip {
 	 * Draws the shadow of the chip on the canvas, around the chip's box.
 	 * The shadow is a 2 pixel (scaled by zoom) wide rectangle around the chip's box.
 	 * The color of the shadow is a darker version of the chip's color.
-	 * @method drawShadow
+	 * @method drawChipShadow
 	 */
-	drawShadow() {
+	drawChipShadow() {
 		let h = this.height
 		let fontSize = 20 * zoom
 		ctx.font = `${fontSize}px "Cousine`
@@ -441,6 +256,151 @@ class Chip {
 		)
 		ctx.fill()
 		ctx.closePath()
+	}
+}
+
+class Pin {
+	/**
+	 * Creates a new pin with the given properties.
+	 * @param {String} name - The name of the pin.
+	 * @param {Number} id - The ID of the pin.
+	 * @param {String} type - The type of the pin (in or out).
+	 * @param {String} color - The color of the pin.
+	 * @param {Number} radius - The radius of the pin (default is 7).
+	 * @param {Boolean} state - The state of the pin (true or false).
+	 * @param {Boolean} set - Whether the pin has been set (true or false).
+	 * @param {Chip} parent - The parent chip of the pin.
+	 */
+	constructor(name, id, type, color, radius = 7, state, set, parent) {
+		this.name = name
+		this.id = id
+		this.type = type
+		this.color = color
+		this.radius = radius
+		this.state = state
+		this.set = set
+		this.parent = parent
+	}
+
+	/**
+	 * Draws the pin on the canvas, at the position determined by the parent chip.
+	 * The pin is drawn as a black circle with a radius of 7 pixels (scaled by zoom).
+	 * The x and y coordinates of the pin are calculated based on the position of the parent chip.
+	 * @param {Chip} parent - The parent chip of the pin.
+	 * @method draw
+	 */
+	draw(x, y) {
+		this.x = x
+		this.y = y
+		ctx.beginPath()
+		ctx.fillStyle = "black"
+		ctx.arc(this.x, this.y, this.radius * zoom, 0, 2 * Math.PI)
+		ctx.fill()
+		ctx.closePath()
+
+		this.updateShadowPin()
+	}
+
+	createShadowPin() {
+		let shadow = new Shadow_Pin(this.name, this.id, this.type, this.color, this.radius, this.parent, this)
+		shadow.create()
+		this.shadowPin = shadow
+	}
+
+	updateShadowPin() {
+		if (!this.shadowPin) this.createShadowPin()
+		this.shadowPin.update(this.x, this.y)
+	}
+}
+
+class Shadow_Pin {
+	constructor(name, id, type, color, radius = 7, parent, parentPin) {
+		this.name = name
+		this.id = id
+		this.type = type
+		this.color = color
+		this.radius = radius
+		this.parent = parent
+		this.parentPin = parentPin
+	}
+
+	create() {
+		let element = document.createElement("div")
+		element.classList.add("pinShadow")
+		element.id = `${this.type}Shadow-${this.parent.id}-${this.id}`
+
+		element.onmouseover = () => {
+			element.style.cursor = "pointer"
+			element.style.backgroundColor = (this.type == "in" ? tempConnectionLine?.to != null : tempConnectionLine?.from != null) ? "gray" : "white"
+		}
+
+		element.onmouseleave = () => {
+			element.style.cursor = "default"
+			element.style.backgroundColor = "transparent"
+		}
+
+		element.addEventListener("click", e => {
+			if (tempConnectionLine != null) {
+				if (!isMouseOnAnyChip(e)) tempConnectionLine.posCords.pop()
+				if (this.type == "in" ? tempConnectionLine.to != null : tempConnectionLine.from != null) return
+				this.type == "in" ? tempConnectionLine.to = this.parentPin : tempConnectionLine.from = this.parentPin
+				if (this.type == "out") tempConnectionLine.posCords.reverse()
+				let connection = new ConnectionLine(tempConnectionLine.from, tempConnectionLine.to, tempConnectionLine.posCords)
+				currentChip.connections.push(connection)
+				tempConnectionLine = null
+				return
+			}
+
+			tempConnectionLine = {
+				from: this.type == "out" ? this.parentPin : null,
+				to: this.type == "in" ? this.parentPin : null,
+				posCords: [],
+				coursor: {
+					x: this.parentPin.x,
+					y: this.parentPin.y
+				},
+				draw: () => {
+					if (!tempConnectionLine.from && !tempConnectionLine.to) return
+
+					let start = this.type == "in" ? tempConnectionLine.to : tempConnectionLine.from
+
+					let startX = start.x
+					let startY = start.y
+
+					ctx.beginPath()
+					ctx.lineWidth = 5 * zoom
+					ctx.strokeStyle = start.state ? start.color : "black"
+					ctx.lineCap = "round"
+					ctx.lineJoin = 'round'
+					ctx.moveTo(startX, startY)
+
+					for (let i = 0; i < tempConnectionLine.posCords.length; i++) {
+						const point = tempConnectionLine.posCords[i]
+						ctx.lineTo(point.x * zoom + offset.x, point.y * zoom + offset.y)
+					}
+
+					let end = tempConnectionLine.coursor
+					ctx.lineTo(end.x, end.y)
+
+					ctx.stroke()
+					ctx.closePath()
+				}
+			}
+		})
+
+		this.element = element
+		document.body.appendChild(this.element)
+	}
+
+	update(x, y) {
+		this.x = x
+		this.y = y
+		if (!this.element) this.create()
+
+		this.element.style.left = `${this.x - this.radius * zoom}px`
+		this.element.style.top = `${this.y - this.radius * zoom}px`
+		this.element.style.width = `${this.radius * 2 * zoom}px`
+		this.element.style.height = `${this.radius * 2 * zoom}px`
 	}
 }
 
@@ -520,25 +480,12 @@ var currentChip = {
 	code: null,
 	subChips: [],
 	connections: [],
-	inputPins: [{
-		name: 0,
-		id: 0,
-		type: "in",
-		color: "#00ff00",
-		state: false,
-		set: true
-	}],
-	outputPins: [{
-		name: 0,
-		id: 0,
-		type: "out",
-		color: "#00ff00",
-		state: false,
-		set: true
-	}]
+	inputPins: [],
+	outputPins: [],
+	name: "Current Chip",
+	radius: 7,
+	innerRadius: 21
 }
-currentChip.inputPins[0].parent = currentChip
-currentChip.outputPins[0].parent = currentChip
 
 /**
  * Combine two rgba colors using the source-over operator.
